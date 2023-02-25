@@ -601,11 +601,11 @@ INT i;
 static TEXT *head="Listing of interrupts";
 UBYTE b[4];
 static TEXT LINE[80];
-static TEXT *fname = "REM::C:\IVT.LST";
+static TEXT *fname = "REM::C:\\IVT.LST";
   if (p_open(&fd, fname, P_FTEXT|P_FREPLACE|P_FUPDATE)!=0)
     println("Can't create interrupt listing file");
   else {
-    println("Creating....");
+    println("Creating...");
     println(fname);
     p_write(fd,head,p_slen(head));
     for (i=0; i<0x100; i++) {
@@ -647,7 +647,7 @@ UBYTE b[BTLEN];
 UWORD tot6000, tot7000, tot8000, tot9000;
 static TEXT buf[80];
 static TEXT LINE[80];
-static TEXT *fname = "REM::C:\BANKS.LST";
+static TEXT *fname = "REM::C:\\BANKS.LST";
 UWORD prevbank=p_getrombank();
 
   if (p_open(&fd, fname, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0)
@@ -754,7 +754,7 @@ static UBYTE buf[BUFFERSIZE];
 UINT tseg;
 TEXT szbuf[40];
 UWORD prevbank=p_getrombank();
-  p_atos(szbuf,"REM::C:\%s.MEM", fname);
+  p_atos(szbuf,"REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
     println("Can't create output file");
     println(szbuf);
@@ -784,7 +784,7 @@ UWORD prevbank=p_getrombank();
 LOCAL_C VOID sendbank(UWORD bank)
 {
 TEXT buf[40];
-  p_atos(buf,"ROM2%02X", bank);
+  p_atos(buf,"ROM2%02x", bank);
   bankno = bank;
   send(0x0900, 0x0000, 0x0A00, buf);
 }
@@ -794,6 +794,43 @@ LOCAL_C VOID sendbanks9000()
 INT b;
   for (b=0x80; b<0xA0; b++)
     sendbank(b);
+}
+
+
+LOCAL_C VOID sendbanks9000selection(TEXT *bankargs) {
+  UINT firstbank = 0, lastbank = 0;
+  INT ret;
+  TEXT szbuf[80];
+  INT b;
+
+  ret = p_stoa(&bankargs, "%x %x", &firstbank, &lastbank);
+
+  switch (ret) {
+    case 0: // Got two arguments, everything's fine
+      break;
+    case -2: // E_GEN_ARG (not enough arguments, so there's only one)
+      lastbank = firstbank;
+      break;
+    default: // Any other error, we leave now
+      println("Bad arguments.");
+      return;
+  }
+
+  if (firstbank > lastbank) {
+    println("First bank can't be bigger than the last bank!");
+    return;
+  }
+
+  if (firstbank == lastbank) {
+    p_atos(szbuf, "Sending bank %02x...", firstbank);
+  } else {
+    p_atos(szbuf, "Sending banks %02x to %02x...", firstbank, lastbank);
+  }
+  println(szbuf);
+
+  for (b=firstbank; b<=lastbank; b++)
+    sendbank(b);
+
 }
 
 
@@ -815,7 +852,7 @@ p_atos(szbuf,"bankno=0x%02x", bankno);
 println(szbuf);
 return;*/
 
-  p_atos(szbuf,"REM::C:\%s.MEM", fname);
+  p_atos(szbuf,"REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
     println("Can't create output file");
     println(szbuf);
@@ -844,7 +881,7 @@ return;*/
 LOCAL_C VOID sendbankPSEL2(UWORD bank)
 {
 TEXT buf[40];
-  p_atos(buf,"ROM1%02X", bank);
+  p_atos(buf,"ROM1%02x", bank);
   bankno = bank;
   sendPSEL2(0x0800, 0x0000, 0x0900, buf);
 }
@@ -878,7 +915,7 @@ UINT tseg;
 TEXT szbuf[80];
 UBYTE prevbank=GETPSEL0();
 
-  p_atos(szbuf,"REM::C:\%s.MEM", fname);
+  p_atos(szbuf,"REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
     println("Can't create output file");
     println(szbuf);
@@ -913,7 +950,7 @@ UINT tseg;
 TEXT szbuf[80];
 UBYTE prevbank=GETPSEL1();
 
-  p_atos(szbuf,"REM::C:\%s.MEM", fname);
+  p_atos(szbuf,"REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
     println("Can't create output file");
     println(szbuf);
@@ -942,7 +979,7 @@ UBYTE prevbank=GETPSEL1();
 LOCAL_C VOID sendbankPSEL0(UWORD bank)
 {
 TEXT buf[40];
-  p_atos(buf,"RAM1%02X", bank);
+  p_atos(buf,"RAM1%02x", bank);
   bankno = bank;
   sendPSEL0(0x0600, 0x0000, 0x0700, buf);
 }
@@ -950,9 +987,9 @@ TEXT buf[40];
 LOCAL_C VOID sendbankPSEL1(UWORD bank)
 {
 TEXT buf[40];
-  p_atos(buf,"RAM2%02X", bank);
+  p_atos(buf,"RAM2%02x", bank);
   bankno = bank;
-  sendPSEL2(0x0700, 0x0000, 0x0800, buf);
+  sendPSEL1(0x0700, 0x0000, 0x0800, buf);
 }
 
 LOCAL_C VOID sendbanks6000()
@@ -962,7 +999,7 @@ INT b;
     println("Can't dump 0x60000-0x6FFFF: CS or DS in that range!");
   }
   else {
-    for (b=0x00; b<0xFF; b++)
+    for (b=0x00; b<=0xFF; b++)
       sendbankPSEL0(b);
   }
 }
@@ -974,30 +1011,37 @@ INT b;
     println("Can't dump 0x70000-0x7FFFF: CS or DS in that range!");
   }
   else {
-    for (b=0x00; b<0xFF; b++)
+    for (b=0x00; b<=0xFF; b++)
       sendbankPSEL1(b);
   }
 }
 
 
+LOCAL_C VOID sysver() {
+  TEXT buf[40];
+
+  p_atos(buf, "EPOC16: %04x   ROM: %04x", p_version(), p_romversion());
+  println(buf);
+}
 
 
 
 
 LOCAL_C VOID help(VOID)
 {
-#define HELPSTRINGS 13
+#define HELPSTRINGS 14
 static TEXT *helpstr[HELPSTRINGS]= {
 "ADDRESS: (addr) are hex pairs SSSS:OOOO segment:offset, OOOO to keep segment",
 "         (nn) is a byte, e.g. f5",
 "DUMP:    db dw (addr) dump a page of bytes, words. \000 for next page",
-"VECTORS: ivt (nn) shows Vector Table, sendivt writes to REM::C:\\IVT.LST",
+"VECTORS: ivt (nn) shows Vector Table, sendivt writes to REM::C:\\\IVT.LST",
 "         ivtlong (nn) shows vectors and functions.",
 "XMIT:    sendram384, sendram1, sendram2, sendrom1, sendrom2, sendrom384",
 "         send the relevant banks of memory over the NCP link. Files will be",
 "         created on your PC called RAM384.MEM, RAM1xx.MEM, RAM2xx.MEM,",
 "         ROM1xx.MEM, ROM2xx.MEM, ROM384.MEM. xx is replaced by the currently",
-"         selected bank no. Send all RAM/ROM banks: sendbanksX000. X=6,7,8,9",
+"         selected bank no. Send all RAM/ROM banks: sendbanksX000. X=6,7,8,9.",
+"         Send an image of an SSD: sendssd X, where X is the drive letter.",
 "BANKS:   bank (nn) sets ROM bank, or on its own shows current ROM bank no.",
 "",
 "NB: sendrom384, sendram384, sendbanksX000 work, others might not",
@@ -1040,25 +1084,25 @@ TEXT buf[40];
     send(0x0000, 0x0000, 0x0600, "RAM384");
   else if (p_scmp("sendram1", cmd) == 0) {
     /* Need to iterate over all banks here */
-    p_atos(buf,"RAM1%02X", psel0);
+    p_atos(buf,"RAM1%02x", psel0);
     send(0x0600, 0x0000, 0x0700, buf);
   }
   else if (p_scmp("sendram2", cmd) == 0) {
     /* Need to iterate over all banks here */
-    p_atos(buf,"RAM2%02X", psel1);
+    p_atos(buf,"RAM2%02x", psel1);
     send(0x0700, 0x0000, 0x0800, buf);
   }
   else if (p_scmp("sendrom1", cmd) == 0) {
     /* Seems to be the same as 0x90000-0x9FFFF */
-    p_atos(buf,"ROM1%02X", psel2);
+    p_atos(buf,"ROM1%02x", psel2);
     send(0x0800, 0x0000, 0x0900, buf);
   }
   else if (p_scmp("sendrom2", cmd) == 0) {
-    p_atos(buf,"ROM2%02X", psel3);
+    p_atos(buf,"ROM2%02x", psel3);
     send(0x0900, 0x0000, 0x0A00, buf);
   }
   else if (p_scmp("sendrom384", cmd) == 0)
-    send(0x0A00, 0x0000, 0x0000, "ROM384");
+    send(0x0A00, 0x0000, 0x1000, "ROM384");
   else if (p_scmp("sendivt", cmd) == 0)
     send_ivt();
   else if (p_scmp("sendbanks6000", cmd) == 0) {
@@ -1073,9 +1117,12 @@ TEXT buf[40];
   else if (p_scmp("sendbanks9000", cmd) == 0) {
     sendbanks9000();
   }
+  else if (p_bcmpi("sendbanks9000 ", 14, cmd, 14) == 0) {
+    sendbanks9000selection(cmd+14);
+  }
   else if (p_scmp("sendallrom", cmd) == 0) {
     sendbanks9000();
-    send(0x0A00, 0x0000, 0x0000, "ROM384");
+    send(0x0A00, 0x0000, 0x1000, "ROM384");
   }
   else if (p_scmp("banktest", cmd) == 0) {
     banktest();
@@ -1089,6 +1136,8 @@ TEXT buf[40];
       p_atos(buf,"ROM bank %02x selected", bankno);
       wInfoMsg(buf);
     }
+  } else if (p_scmp("sysver", cmd) == 0) {
+    sysver();
   }
   for (s=cmd,d=lastcmd; *s && !p_isspace(*s); s++,d++)
     *d=*s;
@@ -1195,7 +1244,8 @@ G_GC gc;
   ebH=CreateEditor();
   if (!ebH)
     p_exit(-1);
-  println("EDisAsm v0.03 \270 Matt Gumbley -=- an EPOC 16 Disassembler");
+  println("EDisAsm v0.0.4 -=- SIBO/EPOC16 Exploratory Tool");
+  println("Original version by Matt Gumbley, updated 2023 by Alex Brown");
   println("Type 'help' for help, and 'exit' to exit.");
   hEBEmphasise(ebH,TRUE);
   bankno = p_getrombank();
