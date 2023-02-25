@@ -1321,7 +1321,8 @@ G_GC gc;
   ebH=CreateEditor();
   if (!ebH)
     p_exit(-1);
-  println("EDisAsm v0.03 \270 Matt Gumbley -=- an EPOC16 Disassembler");
+  println("EDisAsm v0.0.4 -=- SIBO/EPOC16 Exploratory Tool");
+  println("Original version by Matt Gumbley, updated 2023 by Alex Brown");
   println("Type 'help' for help, and 'exit' to exit.");
   hEBEmphasise(ebH,TRUE);
   bankno = p_getrombank();
