@@ -1,0 +1,1011 @@
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 1
+access.asm
+
+
+
+      1	0000				     .model  small
+      2					     .8086
+      3	0000				     .code
+      4	      =0002		     A9WControlRW	     equ     0002h
+      5				       A9RControl record     A9MFrc2Is512KHzOr1KHz:1,A9MFrc2PreScale:1,\
+      6							     A9MFrc1Is512KHzOr1Hz:1,A9MFrc1PreScale:1,\
+      7							     A9MSoundEnable:1,A9MLcdEnable:1,\
+      8							     A9MLowBatNMIEnable:1,A9MDoorNMIEnable:1,\
+      9							     A9MZeroIsGrayMode:1,A9MArmStandBy:1,\
+     10							     A9MDisableDMADivide:1,A9MRamDeviceSize:2,\
+     11							     A9MDisableMemWait:1,A9MDisableIoWait:1,\
+     12							     A9MDisableClockDivide:1
+     13	      =0000		       A9VRam256KBits	     equ     (0	shl A9MRamDeviceSize)
+     14	      =0008		       A9VRam1MBits	     equ     (1	shl A9MRamDeviceSize)
+     15	      =0010		       A9VRam4MBits	     equ     (2	shl A9MRamDeviceSize)
+     16	      =0018		       A9VRam16MBits	     equ     (3	shl A9MRamDeviceSize)
+     17	      =0018		       A9XRamDeviceSizeMask  equ     (3	shl A9MRamDeviceSize)
+     18	      =0004		     A9WStatusR		     equ     0004h
+     19				       A9RStatus record	     A9MCold:1,A9MPowerFail:1,\
+     20							     A9MReset:1,A9MNoBattery:1,\
+     21							     A9MFifoFull:1,A9MSlaveOverrun:1,\
+     22							     A9MSlaveControlFrame:1,A9MSlaveDataValid:1,\
+     23							     A9MKeyboard:1,A9MSlaveClock:1,\
+     24							     A9MMainsPresent:1,A9MDoorSwitch:1,\
+     25							     A9MLowBatNMI:1,A9MDoorNMI:1,\
+     26							     A9MProtectedModeNMI:1,A9MWatchDogNMI:1
+     27	      =0008		       A9MLcdType	     equ     8
+     28	      =0F00		       A9XLcdType	     equ     0000111100000000b
+     29	      =0004		     A9WLcdSizeW	     equ     0004h
+     30				       A9RLcdSize record     A9MLcdLineLength:5,A9MLcdNumberOfPixels:11
+     31	      =0006		     A9WLcdControlW	     equ     0006h
+     32				       A9RLcdControl record  A9MLcdMode:2,A9MLcdACLineRate:5,A9MLcdPixelRate:5
+     33	      =0000		       A9VSinglePage1	     equ     (0	shl A9MLcdMode)
+     34	      =0400		       A9VSinglePage2	     equ     (1	shl A9MLcdMode)
+     35	      =0800		       A9VSinglePage1And2    equ     (2	shl A9MLcdMode)
+     36	      =0C00		       A9VDualPage1And2	     equ     (3	shl A9MLcdMode)
+     37	      =0006		     A9BInterruptStatusR     equ     0006h
+     38	      =0008		     A9BInterruptMaskRW	     equ     0008h
+     39				       A9RInterrupts record  A9MFrc2:1,A9MFrc1:1,\
+     40							     A9MExpIntB:1,A9MExpIntA:1,A9MExpIntC:1,\
+     41							     A9MSlave:1,A9MTimer:1,A9MSound:1
+     42	      =0009		     A9BNmiClearW	     equ     0009h
+     43	      =000A		     A9BNonSpecificEoiW	     equ     000ah
+     44	      =000B		     A9BStartFlagClearW	     equ     000bh
+     45	      =000C		     A9BTimerEoiW	     equ     000ch
+     46	      =000D		     A9BSerialSlaveEoiW	     equ     000dh
+     47	      =000E		     A9BFrc1EoiW	     equ     000eh
+     48	      =000F		     A9BFrc2EoiW	     equ     000fh
+     49	      =0010		     A9WResetWatchDogW	     equ     0010h
+     50	      =0012		     A9WFrc1DataRW	     equ     0012h
+     51	      =0014		     A9BProtectionOnW	     equ     0014h
+     52	      =0014		     A9BProtectionOffR	     equ     0014h
+     53	      =0015		     A9BProtectionOffW	     equ     0015h
+     54	      =0016		     A9WProtectionUpperW     equ     0016h
+     55	      =0018		     A9WProtectionLowerW     equ     0018h
+     56	      =001A		     A9BSoundDataRW	     equ     001ah
+     57	      =001C		     A9BSoundEoiW	     equ     001ch
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 2
+access.asm
+
+
+
+     58	      =001E		     A9WFrc2DataRW	     equ     001eh
+     59	      =0020		     A9WPortABDataRW	     equ     0020h
+     60				       A9RPortABData record  A9MKeyIdX2:1,A9MNiCdDetect:1,\
+     61							     A9MBatLevel2:1,A9MBatLevel1:1,A9MLiBatLevel:1,\
+     62							     A9MKeyIdX1:1,A9MKeyIdX0:0,A9MKeyRowX8:1,\
+     63							     A9MCradle:1,A9MKeyRowX:7
+     64	      =0020		     A9BPortADataRW	     equ     0020h
+     65	      =0021		     A9BPortBDataRW	     equ     0021h
+     66	      =0022		     A9WPortABDDRRW	     equ     0022h
+     67	      =0000		       A9VPortABDDR	     equ     0000000000000000b
+     68	      =0022		     A9BPortADDRRW	     equ     0022h
+     69	      =0023		     A9BPortBDDRRW	     equ     0023h
+     70	      =0024		     A9WPortCDDataRW	     equ     0024h
+     71				       A9RPortCDData record  A9MVccPacksEnable:1,A9MCodecEnable:1,\
+     72							     A9MVccLcdEnable:1,A9MLcdPanelEnable:1,\
+     73							     A9MLcdContrast:4,A9MVolume:2,\
+     74							     A9MReproEnable:1,A9MAltDoorNMIEnable:1,\
+     75							     A9MAmplifierEnable:1,A9MKeyIdEnable:1,\
+     76							     A9MBuzVolX:1,A9MBacklightEnableX:1
+     77	      =00C0		       A9VVolumeLow	     equ     (mask A9MVolume)
+     78	      =0F00		       A9VPortCDData	     equ     0000111100000000b
+     79	      =0F00		       A9VPortCDDDR	     equ     not (1111000011111111b)
+     80	      =0024		     A9BPortCDataRW	     equ     0024h
+     81	      =0025		     A9BPortDDataRW	     equ     0025h
+     82	      =0026		     A9WPortCDDDRRW	     equ     0026h
+     83	      =0026		     A9BPortCDDRRW	     equ     0026h
+     84	      =0027		     A9BPortDDDRRW	     equ     0027h
+     85	      =0028		     A9BPageSelect6000RW     equ     0028h
+     86	      =0029		     A9BPageSelect7000RW     equ     0029h
+     87	      =002A		     A9BPageSelect8000RW     equ     002ah
+     88	      =002B		     A9BPageSelect9000RW     equ     002bh
+     89				       A9RControlExtraRW record	A9MSlaveIntEnable:1,A9MClkDiv:2,\
+     90							     A9MClockEnable5:1,A9MClockEnable4:1,\
+     91							     A9MClockEnable3:1,A9MClockEnable2:1,\
+     92							     A9MClockEnable1:1,A9MSoundDir:1,\
+     93							     A9MExonDisable:1,A9MBuzzFromFrc1OrTog:1,\
+     94							     A9MBuzzTog:1,A9MKeyCol:4
+     95	      =0000		       A9VKeyColHigh	     equ     0
+     96	      =0001		       A9VKeyColLow	     equ     1
+     97	      =0008		       A9VKeyCol0	     equ     8
+     98	      =6000		       A9VClkDiv1	     equ     (3	shl A9MClkDiv)
+     99	      =4000		       A9VClkDiv2	     equ     (2	shl A9MClkDiv)
+    100	      =2000		       A9VClkDiv3	     equ     (1	shl A9MClkDiv)
+    101	      =0000		       A9VClkDiv4	     equ     (0	shl A9MClkDiv)
+    102	      =002E		     A9WPumpControlRW	     equ     002eh
+    103				       A9RPumpControl record A9MVhPumpDc:4,A9MVhPumpBat:4,\
+    104							     A9MLcdPump:4,A9MPump2:4
+    105	      =0E00		       A9VVhPumpBat	     equ     (14 shl A9MVhPumpBat)
+    106	      =0400		       A9VVhPumpBatSoft	     equ     (4	shl A9MVhPumpBat)
+    107	      =0800		       A9VVhPumpBatMedium    equ     (8	shl A9MVhPumpBat)
+    108	      =2000		       A9VVhPumpDC	     equ     (2	shl A9MVhPumpDc)
+    109	      =1000		       A9VVhPumpDCSoft	     equ     (1	shl A9MVhPumpDc)
+    110	      =0070		       A9VLcdPump	     equ     (7	shl A9MLcdPump)
+    111	      =0010		       A9VLcdPumpSoft	     equ     (1	shl A9MLcdPump)
+    112	      =000F		       A9VPacksPumpSoft	     equ     (15 shl A9MPump2)
+    113	      =0064		       A9VVhPumpDelay	     equ     100     ; Milliseconds
+    114	      =0005		       A9VLcdPumpDelay	     equ     5	     ; Milliseconds
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 3
+access.asm
+
+
+
+    115	      =0001		       A9VCC3OnDelay	     equ     1	     ; Milliseconds
+    116	      =0014		       A9VCCPacksDelay	     equ     20	     ; Milliseconds
+    117	      =000A		       A9VCC2Delay	     equ     10	     ; Milliseconds
+    118	      =0080		     A9WRtcLSWRW	     equ     0080h
+    119	      =0082		     A9WRtcMSWRW	     equ     0082h
+    120	      =0084		     A9WNullFrameW	     equ     0084h
+    121	      =0088		     A9BSlaveDataR	     equ     0088h
+    122	      =008A		     A9BSerialDataRW	     equ     008ah
+    123	      =008C		     A9BSerialControlW	     equ     008ch
+    124	      =008E		     A9BChannelSelectRW	     equ     008eh
+    125				       A9RChannelSelect	record A9MMultiplexEnable:1,A9MSerialClockRate:2,\
+    126							     A9MPack5Enable:1,A9MPack4Enable:1,\
+    127							     A9MPack3Enable:1,A9MPack2Enable:1,\
+    128							     A9MPack1Enable:1
+    129	      =0000		       A9VSClkRateMedium     equ     (0	shl A9MSerialClockRate)
+    130	      =0020		       A9VSClkRateSpecial    equ     (1	shl A9MSerialClockRate)
+    131	      =0040		       A9VSClkRateSlow	     equ     (2	shl A9MSerialClockRate)
+    132	      =0060		       A9VSClkRateFast	     equ     (3	shl A9MSerialClockRate)
+    133				     ;
+    134				     ; Asic9 Dependent constants
+    135				     ;
+    136				     ResetWatchDog	     equ     A9WResetWatchDogW
+    137	      =0001		     SelectChannel1	     equ     (mask A9MPack1Enable)
+    138	      =0002		     SelectChannel2	     equ     (mask A9MPack2Enable)
+    139	      =0004		     SelectChannel3	     equ     (mask A9MPack3Enable)
+    140	      =0008		     SelectChannel4	     equ     (mask A9MPack4Enable)
+    141	      =0010		     SelectChannel5	     equ     (mask A9MPack5Enable)
+    142				     ;
+    143					     public  _access
+    144					     public  _memcpy
+    145					     public  _getpsel0
+    146					     public  _setpsel0
+    147					     public  _getpsel1
+    148					     public  _setpsel1
+    149					     public  _getpsel2
+    150					     public  _setpsel2
+    151					     public  _memcpypsel0
+    152					     public  _memcpypsel1
+    153					     public  _memcpypsel2
+    154					     public  _getcs
+    155					     public  _getds
+    156
+    157	0000			     _getcs  proc    near
+    158	0000  0E			     push    cs
+    159	0001  58			     pop     ax
+    160	0002  C3			     retn
+    161	0003			     _getcs  endp
+    162
+    163	0003			     _getds  proc    near
+    164	0003  1E			     push    ds
+    165	0004  58			     pop     ax
+    166	0005  C3			     retn
+    167	0006			     _getds  endp
+    168
+    169
+    170				     ; Thanks to Patrick for memcpy :-)
+    171				     ; Thanks to Simon for the values of PSEL0..3 ;-)
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 4
+access.asm
+
+
+
+    172
+    173
+    174	0006			     _getpsel0	     proc    near
+    175
+    176	0006  FA			     cli
+    177
+    178	0007  51			     push    cx
+    179	0008  2A C9			     sub     cl,cl
+    180	000A  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    181	000F  E6 15			     out     15h,al  ; A9BProtectionOffW
+    182
+    183	0011  E6 15			     out     15h,al  ; disable memory protection
+    184	0013  E4 28			     in	     al,28h  ; PSEL0
+    185	0015  25 00FF			     and     ax,00ffh
+    186
+    187	0018  84 C9			     test    cl,cl
+    188	001A  74 02			     jz	     dontundo_gp0
+    189	001C  E6 14			     out     14h,al  ; A9BProtectionOnW
+    190	001E			     dontundo_gp0:
+    191	001E  59			     pop     cx
+    192	001F  FB			     sti
+    193	0020  C3			     retn
+    194	0021			     _getpsel0	     endp
+    195
+    196	0021			     _setpsel0	     proc    near
+    197	0021  FA			     cli
+    198
+    199	0022  51			     push    cx
+    200	0023  2A C9			     sub     cl,cl
+    201	0025  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    202	002A  E6 15			     out     15h,al  ; A9BProtectionOffW
+    203
+    204	002C  25 00FF			     and     ax,00ffh
+    205	002F  E6 28			     out     28h,al  ; A9BPageSelect6000
+    206
+    207	0031  84 C9			     test    cl,cl
+    208	0033  74 02			     jz	     dontundo_sp0
+    209	0035  E6 14			     out     14h,al  ; A9BProtectionOnW
+    210	0037			     dontundo_sp0:
+    211	0037  59			     pop     cx
+    212
+    213	0038  FB			     sti
+    214	0039  C3			     retn
+    215	003A			     _setpsel0	     endp
+    216
+    217
+    218	003A			     _getpsel1	     proc    near
+    219
+    220	003A  FA			     cli
+    221
+    222	003B  51			     push    cx
+    223	003C  2A C9			     sub     cl,cl
+    224	003E  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    225	0043  E6 15			     out     15h,al  ; A9BProtectionOffW
+    226
+    227	0045  E6 15			     out     15h,al  ; disable memory protection
+    228	0047  E4 28			     in	     al,28h  ; PSEL0
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 5
+access.asm
+
+
+
+    229	0049  25 00FF			     and     ax,00ffh
+    230
+    231	004C  84 C9			     test    cl,cl
+    232	004E  74 02			     jz	     dontundo_gp1
+    233	0050  E6 14			     out     14h,al  ; A9BProtectionOnW
+    234	0052			     dontundo_gp1:
+    235	0052  59			     pop     cx
+    236	0053  FB			     sti
+    237	0054  C3			     retn
+    238	0055			     _getpsel1	     endp
+    239
+    240	0055			     _setpsel1	     proc    near
+    241	0055  FA			     cli
+    242
+    243	0056  51			     push    cx
+    244	0057  2A C9			     sub     cl,cl
+    245	0059  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    246	005E  E6 15			     out     15h,al  ; A9BProtectionOffW
+    247
+    248	0060  25 00FF			     and     ax,00ffh
+    249	0063  E6 28			     out     28h,al  ; A9BPageSelect6000
+    250
+    251	0065  84 C9			     test    cl,cl
+    252	0067  74 02			     jz	     dontundo_sp1
+    253	0069  E6 14			     out     14h,al  ; A9BProtectionOnW
+    254	006B			     dontundo_sp1:
+    255	006B  59			     pop     cx
+    256
+    257	006C  FB			     sti
+    258	006D  C3			     retn
+    259	006E			     _setpsel1	     endp
+    260
+    261	006E			     _getpsel2	     proc    near
+    262
+    263	006E  FA			     cli
+    264
+    265	006F  51			     push    cx
+    266	0070  2A C9			     sub     cl,cl
+    267	0072  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    268	0077  E6 15			     out     15h,al  ; A9BProtectionOffW
+    269
+    270	0079  E6 15			     out     15h,al  ; disable memory protection
+    271	007B  E4 2A			     in	     al,2ah  ; PSEL2
+    272	007D  25 00FF			     and     ax,00ffh
+    273
+    274	0080  84 C9			     test    cl,cl
+    275	0082  74 02			     jz	     dontundo_gp2
+    276	0084  E6 14			     out     14h,al  ; A9BProtectionOnW
+    277	0086			     dontundo_gp2:
+    278	0086  59			     pop     cx
+    279	0087  FB			     sti
+    280	0088  C3			     retn
+    281	0089			     _getpsel2	     endp
+    282
+    283	0089			     _setpsel2	     proc    near
+    284	0089  FA			     cli
+    285
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 6
+access.asm
+
+
+
+    286	008A  51			     push    cx
+    287	008B  2A C9			     sub     cl,cl
+    288	008D  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    289	0092  E6 15			     out     15h,al  ; A9BProtectionOffW
+    290
+    291	0094  25 00FF			     and     ax,00ffh
+    292	0097  E6 2A			     out     2ah,al  ; A9BPageSelect8000
+    293
+    294					     ; may need	out 14h,al to re-enable	memory protection?
+    295					     ; that's what HwRomBankSet	does after out 0x2b,al (PSEL3)
+    296					     ; HwRomBankSet doesn't touch the watchdog,	and HwRomBankGet
+    297					     ; doesn't in 0x2b - HwRomBankSet stores whatever it had written
+    298					     ; into the	OS data	segment; HwRomBankGet returns this value.
+    299					     ; You'd think that	PSELx are write-only, but their	name in	OSSIBO.INC
+    300					     ; is A9BPageSelectx000RW ...
+    301					     ; No, A000:6251 is	an IN AX,2A. A000:61F7 could be	a memory
+    302					     ; copy routine. It	does an	out 0fh,al first (???)
+    303					     ; 0f = A9BFrc2EoiW
+    304					     ; Also A000:63BA routine outs to 18, 16, 2a
+    305					     ; 16 = A9WProtectionUpperW, 18 = A9WProtectionLowerW
+    306					     ; A000:F971 ins from 2C, ands this	with CF	and outs it to port 10 (?!?)
+    307					     ; (A9WResetWatchDogW)
+    308					     ; xors that with 10 and outs that to 2C (repeated,	to toggle bit 4)
+    309					     ;
+    310	0099  84 C9			     test    cl,cl
+    311	009B  74 02			     jz	     dontundo_sp2
+    312	009D  E6 14			     out     14h,al  ; A9BProtectionOnW
+    313	009F			     dontundo_sp2:
+    314	009F  59			     pop     cx
+    315
+    316	00A0  FB			     sti
+    317	00A1  C3			     retn
+    318	00A2			     _setpsel2	     endp
+    319				     ;
+    320				     ; Here is HwRomBankSet:
+    321				     ;>00000000	 1E		   push	ds
+    322				     ;>00000001	 53		   push	bx
+    323				     ;>00000002	 51		   push	cx
+    324				     ;>00000003	 2AC9		   sub cl,cl
+    325				     ;>00000005	 36860E2000	   xchg	cl,[ss:0x20]
+    326				     ;>0000000A	 BBB004		   mov bx,0x4b0
+    327				     ;>0000000D	 8EDB		   mov ds,bx
+    328				     ;>0000000F	 E615		   out 0x15,al	     ; A9BProtectionOffW
+    329				     ;>00000011	 8B1E0004	   mov bx,[0x400]
+    330				     ;>00000015	 8AE0		   mov ah,al
+    331				     ;>00000017	 86673D		   xchg	ah,[bx+0x3d]
+    332				     ;>0000001A	 E62B		   out 0x2b,al	     ; A9BPageSelect9000RW
+    333				     ;>0000001C	 86C4		   xchg	al,ah
+    334				     ;>0000001E	 2AE4		   sub ah,ah
+    335				     ;>00000020	 36880E2000	   mov [ss:0x20],cl
+    336				     ;>00000025	 84C9		   test	cl,cl
+    337				     ;>00000027	 7402		   jz 0x2b
+    338				     ;>00000029	 E614		   out 0x14,al	     ; A9BProtectionOnW
+    339										     ; aka A9BProtectionOffR
+    340				     ;>0000002B	 59		   pop cx
+    341				     ;>0000002C	 5B		   pop bx
+    342				     ;>0000002D	 1F		   pop ds
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 7
+access.asm
+
+
+
+    343				     ;>0000002E	 CF		   iret
+    344
+    345				     ; original
+    346				     ;_access	     proc    near
+    347				     ;
+    348				     ;	     push    es
+    349				     ;	     push    ax
+    350				     ;	     cli
+    351				     ;	     pop     es
+    352				     ;	     mov     al,es:[bx]
+    353				     ;	     pop     es
+    354				     ;	     sti
+    355				     ;	     retn
+    356				     ;_access	     endp
+    357
+    358	00A2			     _access proc    near
+    359
+    360	00A2  51			     push    cx
+    361	00A3  2A C9			     sub     cl,cl
+    362	00A5  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    363	00AA  E6 15			     out     15h,al  ; A9BProtectionOffW
+    364
+    365	00AC  06			     push    es
+    366	00AD  50			     push    ax
+    367	00AE  FA			     cli
+    368	00AF  07			     pop     es
+    369	00B0  26: 8A 07			     mov     al,es:[bx]
+    370	00B3  07			     pop     es
+    371
+    372	00B4  84 C9			     test    cl,cl
+    373	00B6  74 02			     jz	     dontundo
+    374	00B8  E6 14			     out     14h,al  ; A9BProtectionOnW
+    375	00BA			     dontundo:
+    376	00BA  59			     pop     cx
+    377	00BB  FB			     sti
+    378	00BC  C3			     retn
+    379	00BD			     _access endp
+    380
+    381				     ;	     end _access
+    382
+    383	00BD			     _memcpy proc    near
+    384	00BD  56			     push    si
+    385	00BE  57			     push    di	     ; save these
+    386	00BF  06			     push    es
+    387	00C0  1E			     push    ds
+    388	00C1  52			     push    dx
+    389	00C2  51			     push    cx
+    390	00C3  53			     push    bx
+    391	00C4  50			     push    ax
+    392
+    393	00C5  51			     push    cx	     ; save cx
+    394
+    395	00C6  B1 04			      mov    cl,4
+    396	00C8  D3 E0			      shl    ax,cl   ; ax = segment / 4, so mult by 4
+    397
+    398	00CA  59			     pop     cx	     ; restore cx, the number of bytes to copy
+    399
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 8
+access.asm
+
+
+
+    400	00CB  53			     push    bx	     ; si=bx = offset to read
+    401	00CC  5E			     pop     si
+    402
+    403	00CD  52			     push    dx	     ; di=dx = destination buffer
+    404	00CE  5F			     pop     di
+    405
+    406				     ; Patrick clears decimal here, not	sure why :-~
+    407	00CF  FC			     cld
+    408	00D0  FA			     cli
+    409
+    410	00D1  1E			     push    ds
+    411	00D2  07			     pop     es	     ; es=ds = process's normal	ds
+    412
+    413	00D3  50			     push    ax	     ; ds=ax = source segment
+    414	00D4  1F			     pop     ds
+    415
+    416	00D5  F3> A4			     rep     movsb   ; memcpy(ds:si, es:di, cx)
+    417	00D7  58			     pop     ax
+    418	00D8  5B			     pop     bx
+    419	00D9  59			     pop     cx
+    420	00DA  5A			     pop     dx
+    421	00DB  1F			     pop     ds
+    422	00DC  07			     pop     es
+    423	00DD  5F			     pop     di	     ; save these
+    424	00DE  5E			     pop     si
+    425
+    426	00DF  FB			     sti
+    427	00E0  C3			     retn
+    428	00E1			     _memcpy endp
+    429
+    430
+    431
+    432	00E1			     _memcpypsel0    proc    near
+    433	00E1  56			     push    si
+    434	00E2  57			     push    di	     ; save these
+    435	00E3  06			     push    es
+    436
+    437							     ; save parameters
+    438
+    439	00E4  1E			     push    ds	     ; DEST SEGMENT (PROCESS NORMAL DS)
+    440	00E5  52			     push    dx	     ; DEST OFFSET
+    441	00E6  51			     push    cx	     ; LENGTH
+    442	00E7  53			     push    bx	     ; SOURCE OFFSET
+    443	00E8  50			     push    ax	     ; PSEL0
+    444
+    445	00E9  53			     push    bx	     ; si=bx = offset to read
+    446	00EA  5E			     pop     si
+    447
+    448	00EB  52			     push    dx	     ; di=dx = destination buffer offset
+    449	00EC  5F			     pop     di
+    450
+    451				     ; Patrick clears decimal here, not	sure why :-~
+    452					     ; cld
+    453	00ED  FA			     cli
+    454
+    455	00EE  1E			     push    ds	     ; es=ds = process's normal	ds
+    456	00EF  07			     pop     es	     ; (should be this anyway)
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 9
+access.asm
+
+
+
+    457
+    458
+    459							     ; setup psel0=al
+    460
+    461							     ; save old	SS:20 (memory protection status)
+    462	00F0  51			     push    cx	     ; save count
+    463	00F1  2A C9			     sub     cl,cl
+    464	00F3  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    465	00F8  89 0E 0000r		     mov     ss20,cx
+    466	00FC  E6 15			     out     15h,al  ; A9BProtectionOffW
+    467	00FE  59			     pop     cx	     ; restore count
+    468
+    469	00FF  50			     push    ax	     ; save current PSEL2
+    470	0100  E4 28			     in	     al,28h  ; A9BPageSelect6000
+    471	0102  A3 0002r			     mov     oldpsel0,ax
+    472	0105  58			     pop     ax
+    473
+    474							     ; set new PSEL0
+    475	0106  25 00FF			     and     ax,00ffh
+    476	0109  E6 28			     out     28h,al  ; A9BPageSelect6000
+    477
+    478
+    479	010B  1E			     push    ds	     ; save process DS
+    480	010C  50 55 8B EC C7 46	02+	     push    6000h   ; source segment (ds) is always 6000
+    481	      6000 5D
+    482	0116  1F			     pop     ds
+    483	0117  F3> A4			     rep     movsb   ; memcpy(6000:si, es:di, cx)
+    484	0119  1F			     pop     ds	     ; restore process DS
+    485
+    486	011A  50			     push    ax	     ; restore old PSEL0
+    487	011B  A1 0002r			     mov     ax,oldpsel0
+    488	011E  E6 28			     out     28h,al  ; A9BPageSelect6000
+    489	0120  58			     pop     ax
+    490
+    491
+    492	0121  51			     push    cx
+    493	0122  8B 0E 0000r		     mov     cx,ss20
+    494	0126  84 C9			     test    cl,cl
+    495	0128  74 02			     jz	     dontundo_mp0
+    496	012A  E6 14			     out     14h,al  ; A9BProtectionOnW
+    497	012C			     dontundo_mp0:
+    498	012C  59			     pop     cx
+    499
+    500	012D  58			     pop     ax
+    501	012E  5B			     pop     bx
+    502	012F  59			     pop     cx
+    503	0130  5A			     pop     dx
+    504	0131  1F			     pop     ds
+    505	0132  07			     pop     es
+    506	0133  5F			     pop     di	     ; save these
+    507	0134  5E			     pop     si
+    508	0135  FB			     sti
+    509	0136  C3			     retn
+    510	0137			     _memcpypsel0    endp
+    511
+    512
+    513	0137			     _memcpypsel1    proc    near
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 10
+access.asm
+
+
+
+    514	0137  56			     push    si
+    515	0138  57			     push    di	     ; save these
+    516	0139  06			     push    es
+    517
+    518							     ; save parameters
+    519
+    520	013A  1E			     push    ds	     ; DEST SEGMENT (PROCESS NORMAL DS)
+    521	013B  52			     push    dx	     ; DEST OFFSET
+    522	013C  51			     push    cx	     ; LENGTH
+    523	013D  53			     push    bx	     ; SOURCE OFFSET
+    524	013E  50			     push    ax	     ; PSEL1
+    525
+    526	013F  53			     push    bx	     ; si=bx = offset to read
+    527	0140  5E			     pop     si
+    528
+    529	0141  52			     push    dx	     ; di=dx = destination buffer offset
+    530	0142  5F			     pop     di
+    531
+    532				     ; Patrick clears decimal here, not	sure why :-~
+    533					     ; cld
+    534	0143  FA			     cli
+    535
+    536	0144  1E			     push    ds	     ; es=ds = process's normal	ds
+    537	0145  07			     pop     es	     ; (should be this anyway)
+    538
+    539
+    540							     ; setup psel1=al
+    541
+    542							     ; save old	SS:20 (memory protection status)
+    543	0146  51			     push    cx	     ; save count
+    544	0147  2A C9			     sub     cl,cl
+    545	0149  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    546	014E  89 0E 0000r		     mov     ss20,cx
+    547	0152  E6 15			     out     15h,al  ; A9BProtectionOffW
+    548	0154  59			     pop     cx	     ; restore count
+    549
+    550	0155  50			     push    ax	     ; save current PSEL1
+    551	0156  E4 29			     in	     al,29h  ; A9BPageSelect7000
+    552	0158  A3 0004r			     mov     oldpsel1,ax
+    553	015B  58			     pop     ax
+    554
+    555							     ; set new PSEL1
+    556	015C  25 00FF			     and     ax,00ffh
+    557	015F  E6 29			     out     29h,al  ; A9BPageSelect7000
+    558
+    559
+    560	0161  1E			     push    ds	     ; save process DS
+    561	0162  50 55 8B EC C7 46	02+	     push    7000h   ; source segment (ds) is always 7000
+    562	      7000 5D
+    563	016C  1F			     pop     ds
+    564	016D  F3> A4			     rep     movsb   ; memcpy(7000:si, es:di, cx)
+    565	016F  1F			     pop     ds	     ; restore process DS
+    566
+    567	0170  50			     push    ax	     ; restore old PSEL1
+    568	0171  A1 0004r			     mov     ax,oldpsel1
+    569	0174  E6 29			     out     29h,al  ; A9BPageSelect7000
+    570	0176  58			     pop     ax
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 11
+access.asm
+
+
+
+    571
+    572
+    573	0177  51			     push    cx
+    574	0178  8B 0E 0000r		     mov     cx,ss20
+    575	017C  84 C9			     test    cl,cl
+    576	017E  74 02			     jz	     dontundo_mp1
+    577	0180  E6 14			     out     14h,al  ; A9BProtectionOnW
+    578	0182			     dontundo_mp1:
+    579	0182  59			     pop     cx
+    580
+    581	0183  58			     pop     ax
+    582	0184  5B			     pop     bx
+    583	0185  59			     pop     cx
+    584	0186  5A			     pop     dx
+    585	0187  1F			     pop     ds
+    586	0188  07			     pop     es
+    587	0189  5F			     pop     di	     ; save these
+    588	018A  5E			     pop     si
+    589	018B  FB			     sti
+    590	018C  C3			     retn
+    591	018D			     _memcpypsel1    endp
+    592
+    593	018D			     _memcpypsel2    proc    near
+    594	018D  56			     push    si
+    595	018E  57			     push    di	     ; save these
+    596	018F  06			     push    es
+    597
+    598							     ; save parameters
+    599
+    600	0190  1E			     push    ds	     ; DEST SEGMENT (PROCESS NORMAL DS)
+    601	0191  52			     push    dx	     ; DEST OFFSET
+    602	0192  51			     push    cx	     ; LENGTH
+    603	0193  53			     push    bx	     ; SOURCE OFFSET
+    604	0194  50			     push    ax	     ; PSEL2
+    605
+    606	0195  53			     push    bx	     ; si=bx = offset to read
+    607	0196  5E			     pop     si
+    608
+    609	0197  52			     push    dx	     ; di=dx = destination buffer offset
+    610	0198  5F			     pop     di
+    611
+    612				     ; Patrick clears decimal here, not	sure why :-~
+    613					     ; cld
+    614	0199  FA			     cli
+    615
+    616	019A  1E			     push    ds	     ; es=ds = process's normal	ds
+    617	019B  07			     pop     es	     ; (should be this anyway)
+    618
+    619
+    620							     ; setup psel2=al
+    621
+    622							     ; save old	SS:20 (memory protection status)
+    623	019C  51			     push    cx	     ; save count
+    624	019D  2A C9			     sub     cl,cl
+    625	019F  36: 86 0E	0020		     xchg    cl,[ss:20h]
+    626	01A4  89 0E 0000r		     mov     ss20,cx
+    627	01A8  E6 15			     out     15h,al  ; A9BProtectionOffW
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 12
+access.asm
+
+
+
+    628	01AA  59			     pop     cx	     ; restore count
+    629
+    630	01AB  50			     push    ax	     ; save current PSEL2
+    631	01AC  E4 2A			     in	     al,2ah  ; A9BPageSelect8000
+    632	01AE  A3 0006r			     mov     oldpsel2,ax
+    633	01B1  58			     pop     ax
+    634
+    635							     ; set new PSEL2
+    636	01B2  25 00FF			     and     ax,00ffh
+    637	01B5  E6 2A			     out     2ah,al  ; A9BPageSelect8000
+    638
+    639
+    640	01B7  1E			     push    ds	     ; save process DS
+    641	01B8  50 55 8B EC C7 46	02+	     push    8000h   ; source segment (ds) is always 8000
+    642	      8000 5D
+    643	01C2  1F			     pop     ds
+    644	01C3  F3> A4			     rep     movsb   ; memcpy(8000:si, es:di, cx)
+    645	01C5  1F			     pop     ds	     ; restore process DS
+    646
+    647	01C6  50			     push    ax	     ; restore old PSEL2
+    648	01C7  A1 0006r			     mov     ax,oldpsel2
+    649	01CA  E6 2A			     out     2ah,al  ; A9BPageSelect8000
+    650	01CC  58			     pop     ax
+    651
+    652
+    653	01CD  51			     push    cx
+    654	01CE  8B 0E 0000r		     mov     cx,ss20
+    655	01D2  84 C9			     test    cl,cl
+    656	01D4  74 02			     jz	     dontundo_mp2
+    657	01D6  E6 14			     out     14h,al  ; A9BProtectionOnW
+    658	01D8			     dontundo_mp2:
+    659	01D8  59			     pop     cx
+    660
+    661	01D9  58			     pop     ax
+    662	01DA  5B			     pop     bx
+    663	01DB  59			     pop     cx
+    664	01DC  5A			     pop     dx
+    665	01DD  1F			     pop     ds
+    666	01DE  07			     pop     es
+    667	01DF  5F			     pop     di	     ; save these
+    668	01E0  5E			     pop     si
+    669	01E1  FB			     sti
+    670	01E2  C3			     retn
+    671	01E3			     _memcpypsel2    endp
+    672
+    673	01E3				     .data
+    674	0000  0000		     ss20    dw	     0
+    675	0002  0000		     oldpsel0 dw     0
+    676	0004  0000		     oldpsel1 dw     0
+    677	0006  0000		     oldpsel2 dw     0
+    678
+    679					     end
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 13
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/18/99"
+??FILENAME			  Text	 "access  "
+??TIME				  Text	 "10:31:38"
+??VERSION			  Number 0400
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _DATA
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 ACCESS
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+A9BCHANNELSELECTRW		  Number 008E
+A9BFRC1EOIW			  Number 000E
+A9BFRC2EOIW			  Number 000F
+A9BINTERRUPTMASKRW		  Number 0008
+A9BINTERRUPTSTATUSR		  Number 0006
+A9BNMICLEARW			  Number 0009
+A9BNONSPECIFICEOIW		  Number 000A
+A9BPAGESELECT6000RW		  Number 0028
+A9BPAGESELECT7000RW		  Number 0029
+A9BPAGESELECT8000RW		  Number 002A
+A9BPAGESELECT9000RW		  Number 002B
+A9BPORTADATARW			  Number 0020
+A9BPORTADDRRW			  Number 0022
+A9BPORTBDATARW			  Number 0021
+A9BPORTBDDRRW			  Number 0023
+A9BPORTCDATARW			  Number 0024
+A9BPORTCDDRRW			  Number 0026
+A9BPORTDDATARW			  Number 0025
+A9BPORTDDDRRW			  Number 0027
+A9BPROTECTIONOFFR		  Number 0014
+A9BPROTECTIONOFFW		  Number 0015
+A9BPROTECTIONONW		  Number 0014
+A9BSERIALCONTROLW		  Number 008C
+A9BSERIALDATARW			  Number 008A
+A9BSERIALSLAVEEOIW		  Number 000D
+A9BSLAVEDATAR			  Number 0088
+A9BSOUNDDATARW			  Number 001A
+A9BSOUNDEOIW			  Number 001C
+A9BSTARTFLAGCLEARW		  Number 000B
+A9BTIMEREOIW			  Number 000C
+A9MLCDTYPE			  Number 0008
+A9VCC2DELAY			  Number 000A
+A9VCC3ONDELAY			  Number 0001
+A9VCCPACKSDELAY			  Number 0014
+A9VCLKDIV1			  Number 6000
+A9VCLKDIV2			  Number 4000
+A9VCLKDIV3			  Number 2000
+A9VCLKDIV4			  Number 0000
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 14
+Symbol Table
+
+
+
+A9VDUALPAGE1AND2		  Number 0C00
+A9VKEYCOL0			  Number 0008
+A9VKEYCOLHIGH			  Number 0000
+A9VKEYCOLLOW			  Number 0001
+A9VLCDPUMP			  Number 0070
+A9VLCDPUMPDELAY			  Number 0005
+A9VLCDPUMPSOFT			  Number 0010
+A9VPACKSPUMPSOFT		  Number 000F
+A9VPORTABDDR			  Number 0000
+A9VPORTCDDATA			  Number 0F00
+A9VPORTCDDDR			  Number 0F00
+A9VRAM16MBITS			  Number 0018
+A9VRAM1MBITS			  Number 0008
+A9VRAM256KBITS			  Number 0000
+A9VRAM4MBITS			  Number 0010
+A9VSCLKRATEFAST			  Number 0060
+A9VSCLKRATEMEDIUM		  Number 0000
+A9VSCLKRATESLOW			  Number 0040
+A9VSCLKRATESPECIAL		  Number 0020
+A9VSINGLEPAGE1			  Number 0000
+A9VSINGLEPAGE1AND2		  Number 0800
+A9VSINGLEPAGE2			  Number 0400
+A9VVHPUMPBAT			  Number 0E00
+A9VVHPUMPBATMEDIUM		  Number 0800
+A9VVHPUMPBATSOFT		  Number 0400
+A9VVHPUMPDC			  Number 2000
+A9VVHPUMPDCSOFT			  Number 1000
+A9VVHPUMPDELAY			  Number 0064
+A9VVOLUMELOW			  Number 00C0
+A9WCONTROLRW			  Number 0002
+A9WFRC1DATARW			  Number 0012
+A9WFRC2DATARW			  Number 001E
+A9WLCDCONTROLW			  Number 0006
+A9WLCDSIZEW			  Number 0004
+A9WNULLFRAMEW			  Number 0084
+A9WPORTABDATARW			  Number 0020
+A9WPORTABDDRRW			  Number 0022
+A9WPORTCDDATARW			  Number 0024
+A9WPORTCDDDRRW			  Number 0026
+A9WPROTECTIONLOWERW		  Number 0018
+A9WPROTECTIONUPPERW		  Number 0016
+A9WPUMPCONTROLRW		  Number 002E
+A9WRESETWATCHDOGW		  Number 0010
+A9WRTCLSWRW			  Number 0080
+A9WRTCMSWRW			  Number 0082
+A9WSTATUSR			  Number 0004
+A9XLCDTYPE			  Number 0F00
+A9XRAMDEVICESIZEMASK		  Number 0018
+DONTUNDO			  Near	 _TEXT:00BA
+DONTUNDO_GP0			  Near	 _TEXT:001E
+DONTUNDO_GP1			  Near	 _TEXT:0052
+DONTUNDO_GP2			  Near	 _TEXT:0086
+DONTUNDO_MP0			  Near	 _TEXT:012C
+DONTUNDO_MP1			  Near	 _TEXT:0182
+DONTUNDO_MP2			  Near	 _TEXT:01D8
+DONTUNDO_SP0			  Near	 _TEXT:0037
+DONTUNDO_SP1			  Near	 _TEXT:006B
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 15
+Symbol Table
+
+
+
+DONTUNDO_SP2			  Near	 _TEXT:009F
+OLDPSEL0			  Word	 DGROUP:0002
+OLDPSEL1			  Word	 DGROUP:0004
+OLDPSEL2			  Word	 DGROUP:0006
+RESETWATCHDOG			  Alias	 A9WRESETWATCHDOGW
+SELECTCHANNEL1			  Number 0001
+SELECTCHANNEL2			  Number 0002
+SELECTCHANNEL3			  Number 0004
+SELECTCHANNEL4			  Number 0008
+SELECTCHANNEL5			  Number 0010
+SS20				  Word	 DGROUP:0000
+_ACCESS				  Near	 _TEXT:00A2
+_GETCS				  Near	 _TEXT:0000
+_GETDS				  Near	 _TEXT:0003
+_GETPSEL0			  Near	 _TEXT:0006
+_GETPSEL1			  Near	 _TEXT:003A
+_GETPSEL2			  Near	 _TEXT:006E
+_MEMCPY				  Near	 _TEXT:00BD
+_MEMCPYPSEL0			  Near	 _TEXT:00E1
+_MEMCPYPSEL1			  Near	 _TEXT:0137
+_MEMCPYPSEL2			  Near	 _TEXT:018D
+_SETPSEL0			  Near	 _TEXT:0021
+_SETPSEL1			  Near	 _TEXT:0055
+_SETPSEL2			  Near	 _TEXT:0089
+
+Record Name			  Width	Shift
+
+A9RCHANNELSELECT
+ A9MMULTIPLEXENABLE		  01	07
+ A9MSERIALCLOCKRATE		  02	05
+ A9MPACK5ENABLE			  01	04
+ A9MPACK4ENABLE			  01	03
+ A9MPACK3ENABLE			  01	02
+ A9MPACK2ENABLE			  01	01
+ A9MPACK1ENABLE			  01	00
+A9RCONTROL
+ A9MFRC2IS512KHZOR1KHZ		  01	0F
+ A9MFRC2PRESCALE		  01	0E
+ A9MFRC1IS512KHZOR1HZ		  01	0D
+ A9MFRC1PRESCALE		  01	0C
+ A9MSOUNDENABLE			  01	0B
+ A9MLCDENABLE			  01	0A
+ A9MLOWBATNMIENABLE		  01	09
+ A9MDOORNMIENABLE		  01	08
+ A9MZEROISGRAYMODE		  01	07
+ A9MARMSTANDBY			  01	06
+ A9MDISABLEDMADIVIDE		  01	05
+ A9MRAMDEVICESIZE		  02	03
+ A9MDISABLEMEMWAIT		  01	02
+ A9MDISABLEIOWAIT		  01	01
+ A9MDISABLECLOCKDIVIDE		  01	00
+A9RCONTROLEXTRARW
+ A9MSLAVEINTENABLE		  01	0F
+ A9MCLKDIV			  02	0D
+ A9MCLOCKENABLE5		  01	0C
+ A9MCLOCKENABLE4		  01	0B
+ A9MCLOCKENABLE3		  01	0A
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 16
+Symbol Table
+
+
+
+ A9MCLOCKENABLE2		  01	09
+ A9MCLOCKENABLE1		  01	08
+ A9MSOUNDDIR			  01	07
+ A9MEXONDISABLE			  01	06
+ A9MBUZZFROMFRC1ORTOG		  01	05
+ A9MBUZZTOG			  01	04
+ A9MKEYCOL			  04	00
+A9RINTERRUPTS
+ A9MFRC2			  01	07
+ A9MFRC1			  01	06
+ A9MEXPINTB			  01	05
+ A9MEXPINTA			  01	04
+ A9MEXPINTC			  01	03
+ A9MSLAVE			  01	02
+ A9MTIMER			  01	01
+ A9MSOUND			  01	00
+A9RLCDCONTROL
+ A9MLCDMODE			  02	0A
+ A9MLCDACLINERATE		  05	05
+ A9MLCDPIXELRATE		  05	00
+A9RLCDSIZE
+ A9MLCDLINELENGTH		  05	0B
+ A9MLCDNUMBEROFPIXELS		  0B	00
+A9RPORTABDATA
+ A9MKEYIDX2			  01	0E
+ A9MNICDDETECT			  01	0D
+ A9MBATLEVEL2			  01	0C
+ A9MBATLEVEL1			  01	0B
+ A9MLIBATLEVEL			  01	0A
+ A9MKEYIDX1			  01	09
+ A9MKEYIDX0			  00	09
+ A9MKEYROWX8			  01	08
+ A9MCRADLE			  01	07
+ A9MKEYROWX			  07	00
+A9RPORTCDDATA
+ A9MVCCPACKSENABLE		  01	0F
+ A9MCODECENABLE			  01	0E
+ A9MVCCLCDENABLE		  01	0D
+ A9MLCDPANELENABLE		  01	0C
+ A9MLCDCONTRAST			  04	08
+ A9MVOLUME			  02	06
+ A9MREPROENABLE			  01	05
+ A9MALTDOORNMIENABLE		  01	04
+ A9MAMPLIFIERENABLE		  01	03
+ A9MKEYIDENABLE			  01	02
+ A9MBUZVOLX			  01	01
+ A9MBACKLIGHTENABLEX		  01	00
+A9RPUMPCONTROL
+ A9MVHPUMPDC			  04	0C
+ A9MVHPUMPBAT			  04	08
+ A9MLCDPUMP			  04	04
+ A9MPUMP2			  04	00
+A9RSTATUS
+ A9MCOLD			  01	0F
+ A9MPOWERFAIL			  01	0E
+ A9MRESET			  01	0D
+ A9MNOBATTERY			  01	0C
+Turbo Assembler	 Version 4.0	    07/18/99 10:31:38	    Page 17
+Symbol Table
+
+
+
+ A9MFIFOFULL			  01	0B
+ A9MSLAVEOVERRUN		  01	0A
+ A9MSLAVECONTROLFRAME		  01	09
+ A9MSLAVEDATAVALID		  01	08
+ A9MKEYBOARD			  01	07
+ A9MSLAVECLOCK			  01	06
+ A9MMAINSPRESENT		  01	05
+ A9MDOORSWITCH			  01	04
+ A9MLOWBATNMI			  01	03
+ A9MDOORNMI			  01	02
+ A9MPROTECTEDMODENMI		  01	01
+ A9MWATCHDOGNMI			  01	00
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0008 Word	  Public  DATA
+_TEXT				  16  01E3 Word	  Public  CODE
+

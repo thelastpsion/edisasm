@@ -1,0 +1,103 @@
+EDisAsm - EPOC 16 Disassembler/Dumper
+=====================================
+
+(C) 1998 Matt Gumbley,
+matt@gumbley.demon.co.uk
+
+This utility is an exploratory tool developed for the investigation into
+porting Linux to the SIBO architecture.  
+
+
+
+WARNING
+========
+It might crash your Psion - you have been warned. We accept no responsibility
+for any data loss that might occur as a result of you running this on your
+Psion. It probably doesn't work on the emulator.
+
+
+
+HOPEFUL LEGAL DISCLAIMER
+++++++++++++++++++++++++
+This kit allows you to investigate the EPOC ROM. It provides a tool to
+generate a raw dump of part of your Psion's ROM on your PC, and a commentary on
+some of the routines and features found there. It doesn't include an actual
+listing. It also contains a script which may be used to merge a listing which
+you must produce, and this commentary, to provide a commented listing.
+
+These tools have precedents: the Psionics Files provide descriptions of the
+functions provided by the EPOC ROM, their interrupt numbers, function numbers
+and parameters. The HexView program by Konstantin Saliy allows you to
+investigate the memory of your Psion. 
+
+The 'new' function provided by EDisAsm is the saving of arbitrary memory ranges onto your PC hard disk for later perusal. These may include your own programs'
+memory, or the ROM areas.  (i.e. it's a useful debugging tool)
+
+The 'new' information provided in the 3cdesc.txt file is the locations in ROM
+memory of the routines pointed to by the interrupt vector table on a particular
+SIBO system - the Series 3c - and sundry other descriptions of 3c ROM routines
+and data areas.
+
+This software and information is provided for informational purposes only.
+
+Distribution of a commented listing MIGHT contravene Psion's statement in the
+SIBO C SDK that "reverse engineering is prohibited", therefore, you must
+produce this listing yourself and not redistribute it.  I won't send you
+listings, commented or otherwise, or ROM image files. 
+
+It is hoped that the 3cdesc.txt file DOES NOT CONSTITUTE reverse engineering,
+merely an extension of the body of knowledge present in the Psionics files.
+
+I have posted to Usenet, asking for clarification on what, exactly, we could
+publish of our findings of the SIBO hardware, using this information.
+Hopefully, I'll receive a clarification soon. 
+
+If Psion/Symbian decide that we cannot publish the kind of information present
+in the 3cdesc.txt file, I will remove this archive, and cease distribution of
+it. 
+
+The object of the exercise is to write device drivers for Linux for the ASIC9
+hardware. Information necessary to achieve this is not present in the SIBO C
+SDK, nor in the HDK documentation. (although ASIC1/2 are well-documented).
+
+Therefore, to obtain this information, we have had to investigate EPOC's usage
+of the hardware.  Unless information can be obtained about the I/O port usage
+of ASIC9, this project cannot continue, and will be terminated.
+
+I STRESS THAT DISASSEMBLY OF THE EPOC ROM IS NOT THE AIM OF THIS PROJECT!  If
+I'm told to cease publication of this material, I will do so.  Please mail me -
+matt@gumbley.demon.co.uk (and please, don't stick the lawyers on me, let's be 
+civilised ;-) 
+
+
+
+Quick instructions to generate a commented ROM listing
+------------------------------------------------------
+Use the INSTALL.BAT script to install EDISASM.APP on your Psion 
+(COM2, 19200 baud - adjust the MCLINK.TRM file if you're using MCLINK).
+
+Install on the System Screen, and run EDisAsm on your Psion.
+
+Run MCLINK/RCOM/PsiWin on your PC. Keep your Psion Link active.
+
+Type 'help' in EDisAsm.
+
+Various commands shown there will enable you to save a ROM image file on your
+PC. (try 'sendrom384', which will save ROM384.MEM on your PC - it's 384KB in 
+size, and holds the fixed ROM memory area image.)
+
+Type 'exit' in EDisAsm. Close MCLINK.
+
+You'll be able to generate a listing of ROM384.MEM using your favourite 
+disassembler. (SID, DEBUG, NDISASM, IDA, etc)
+
+3cdesc.txt contains a 'commentary' on the 3c's ROM routines - IT IS NOT A 
+LISTING OF THE ROM!  It contains a list of the interrupt vectors, and comments
+which can be used to annotate a listing of the ROM.
+
+annotate is a perl script which takes the listing of the ROM, produced above,
+and the 3cdesc.txt file, and merges them to provide a listing of the ROM, with
+comments. e.g. all interrupt vector entry points will be commented with the
+name of their function.
+
+

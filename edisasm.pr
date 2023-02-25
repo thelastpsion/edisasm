@@ -1,0 +1,7 @@
+#system epoc img
+#set epocinit=iplib
+#model small jpi
+#compile edisasm
+#pragma link(access.obj)
+#pragma link(hwif.lib)
+#link %main
