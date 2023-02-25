@@ -1,0 +1,4 @@
+**/*.APP
+**/*.MAP
+EDISASM.OBJ
+INSTALL/**
