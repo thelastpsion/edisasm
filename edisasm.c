@@ -416,7 +416,7 @@ UWORD tbankno;
   while (*addr && !p_isxdigit(*addr))
     addr++;
   /* EOL? Use last address */
-  if (!*addr) 
+  if (!*addr)
     return TRUE;
   if (p_stog(&addr, &tbankno, 16) != 0) {
     wInfoMsg(maladdr);
@@ -434,7 +434,7 @@ UWORD tintno;
   while (*addr && !p_isxdigit(*addr))
     addr++;
   /* EOL? Use last address */
-  if (!*addr) 
+  if (!*addr)
     return TRUE;
   if (p_stog(&addr, &tintno, 16) != 0) {
     wInfoMsg(maladdr);
@@ -452,7 +452,7 @@ UWORD tseg, toff;
   while (*addr && !p_isxdigit(*addr))
     addr++;
   /* EOL? Use last address */
-  if (!*addr) 
+  if (!*addr)
     return TRUE;
   if (p_stog(&addr, &tseg, 16) != 0) {
     wInfoMsg(maladdr);
@@ -543,7 +543,7 @@ UBYTE b[4];
 /*
 0         1         2         3         4         5         6         7
 01234567890123456789012345678901234567890123456789012345678901234567890
-INT 00=0000:0000  INT 01=0000:0000  INT 02=0000:0000  INT 03=0000:0000 
+INT 00=0000:0000  INT 01=0000:0000  INT 02=0000:0000  INT 03=0000:0000
 */
   cls();
   for (y=0; y<rows; y++) {
@@ -772,7 +772,7 @@ UWORD prevbank=p_getrombank();
       p_setrombank(prevbank);
       p_write(fd, buf, BUFFERSIZE);
       off+=BUFFERSIZE;
-      if (off==0) 
+      if (off==0)
         seg+=0x100;
     }
     println("done.");
@@ -834,6 +834,7 @@ LOCAL_C VOID sendbanks9000selection(TEXT *bankargs) {
 }
 
 
+
 /* Versions of the above that use direct OUTs to PSEL2 to access the banks at
  * 80000
  */
@@ -870,7 +871,7 @@ return;*/
       SETPSEL2(prevbank);
       p_write(fd, buf, BUFFERSIZE);
       off+=BUFFERSIZE;
-      if (off==0) 
+      if (off==0)
         seg+=0x100;
     }
     println("done.");
@@ -933,7 +934,7 @@ UBYTE prevbank=GETPSEL0();
       SETPSEL0(prevbank);
       p_write(fd, buf, BUFFERSIZE);
       off+=BUFFERSIZE;
-      if (off==0) 
+      if (off==0)
         seg+=0x100;
     }
     println("done.");
@@ -968,7 +969,7 @@ UBYTE prevbank=GETPSEL1();
       SETPSEL1(prevbank);
       p_write(fd, buf, BUFFERSIZE);
       off+=BUFFERSIZE;
-      if (off==0) 
+      if (off==0)
         seg+=0x100;
     }
     println("done.");
@@ -1024,7 +1025,79 @@ LOCAL_C VOID sysver() {
   println(buf);
 }
 
+LOCAL_C VOID ssdinfo(TEXT *devname) {
+  P_DINFO dinfo;
+  INT ret;
+  TEXT szbuf[40];
+  TEXT fulldevname[8];
 
+  p_atos(fulldevname, "LOC::%c:", p_toupper(devname[0]));
+  // println(fulldevname);
+
+  ret = p_dinfo(fulldevname, &dinfo);
+  if (ret < 0) {
+    println("Failed.");
+    return;
+  }
+
+  p_atos(szbuf, "Device: %s, Name: %s, Size: %ld", fulldevname, dinfo.name, dinfo.size);
+  println(szbuf);
+}
+
+
+LOCAL_C VOID sendssd(TEXT *devname) {
+ #define BLOCKSIZE 256
+  P_DINFO dinfo;
+  INT ret;
+  TEXT szbuf[40];
+  TEXT fulldevname[8];
+  TEXT tinydevname;
+  UWORD curblock;
+
+  LONG i;
+
+  static UBYTE buf[BLOCKSIZE];
+
+  VOID *fd;
+
+
+  p_atos(fulldevname, "LOC::%c:", p_toupper(devname[0]));
+
+  ret = p_dinfo(fulldevname, &dinfo);
+  if (ret < 0) {
+    println("Failed.");
+    return;
+  }
+
+
+  tinydevname = fulldevname[5]; // just get the drive letter
+
+
+
+  p_atos(szbuf,"REM::C:\\%s.SSD", dinfo.name);
+  if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
+    println("Can't create output file");
+    println(szbuf);
+    return;
+  }
+
+  println("Creating...");
+  println(szbuf);
+  println("To stop, kill EDisAsm from the System Screen");
+  for (i = 0; i < dinfo.size; i = i+BLOCKSIZE) {
+    curblock = i / 256;
+    p_atos(szbuf, "Writing block %d", curblock);
+    wInfoMsg(szbuf);
+    ret = p_locreadpdd(tinydevname, &i, buf, BLOCKSIZE);
+    if (ret < 0) {
+      println("ERROR!");
+      return;
+    }
+    p_write(fd, buf, BLOCKSIZE);
+  }
+  println("done.");
+  p_close(fd);
+}
 
 
 LOCAL_C VOID help(VOID)
@@ -1136,6 +1209,10 @@ TEXT buf[40];
       p_atos(buf,"ROM bank %02x selected", bankno);
       wInfoMsg(buf);
     }
+  } else if (p_bcmpi("ssdinfo ", 8, cmd, 8) == 0) {
+    ssdinfo(cmd+8);
+  } else if (p_bcmpi("sendssd ", 8, cmd, 8) == 0) {
+    sendssd(cmd+8);
   } else if (p_scmp("sysver", cmd) == 0) {
     sysver();
   }
@@ -1244,8 +1321,7 @@ G_GC gc;
   ebH=CreateEditor();
   if (!ebH)
     p_exit(-1);
-  println("EDisAsm v0.0.4 -=- SIBO/EPOC16 Exploratory Tool");
-  println("Original version by Matt Gumbley, updated 2023 by Alex Brown");
+  println("EDisAsm v0.03 \270 Matt Gumbley -=- an EPOC16 Disassembler");
   println("Type 'help' for help, and 'exit' to exit.");
   hEBEmphasise(ebH,TRUE);
   bankno = p_getrombank();
