@@ -996,7 +996,7 @@ TEXT buf[40];
 LOCAL_C VOID sendbanks6000()
 {
 INT b;
-  if (GETCS() == 0x6000 || GETDS == 0x6000) {
+  if (GETCS() == 0x6000 || GETDS() == 0x6000) {
     println("Can't dump 0x60000-0x6FFFF: CS or DS in that range!");
   }
   else {
@@ -1005,10 +1005,51 @@ INT b;
   }
 }
 
+LOCAL_C VOID sendbanks6000selection(TEXT *bankargs) {
+  UINT firstbank = 0, lastbank = 0;
+  INT ret;
+  TEXT szbuf[80];
+  INT b;
+
+  if (GETCS() == 0x6000 || GETDS() == 0x6000) {
+    println("Can't dump 0x60000-0x6FFFF: CS or DS in that range!");
+    return;
+  }
+
+  ret = p_stoa(&bankargs, "%x %x", &firstbank, &lastbank);
+
+  switch (ret) {
+    case 0: // Got two arguments, everything's fine
+      break;
+    case -2: // E_GEN_ARG (not enough arguments, so there's only one)
+      lastbank = firstbank;
+      break;
+    default: // Any other error, we leave now
+      println("Bad arguments.");
+      return;
+  }
+
+  if (firstbank > lastbank) {
+    println("First bank can't be bigger than the last bank!");
+    return;
+  }
+
+  if (firstbank == lastbank) {
+    p_atos(szbuf, "Sending bank %02x...", firstbank);
+  } else {
+    p_atos(szbuf, "Sending banks %02x to %02x...", firstbank, lastbank);
+  }
+  println(szbuf);
+
+  for (b=firstbank; b<=lastbank; b++)
+    sendbankPSEL0(b);
+
+}
+
 LOCAL_C VOID sendbanks7000()
 {
 INT b;
-  if (GETCS() == 0x7000 || GETDS == 0x7000) {
+  if (GETCS() == 0x7000 || GETDS() == 0x7000) {
     println("Can't dump 0x70000-0x7FFFF: CS or DS in that range!");
   }
   else {
@@ -1180,6 +1221,9 @@ TEXT buf[40];
     send_ivt();
   else if (p_scmp("sendbanks6000", cmd) == 0) {
     sendbanks6000();
+  }
+  else if (p_bcmpi("sendbanks6000 ", 14, cmd, 14) == 0) {
+    sendbanks6000selection(cmd+14);
   }
   else if (p_scmp("sendbanks7000", cmd) == 0) {
     sendbanks7000();
