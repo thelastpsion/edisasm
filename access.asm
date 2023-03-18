@@ -153,6 +153,49 @@ SelectChannel5		equ	(mask A9MPack5Enable)
 	public	_memcpypsel2
 	public	_getcs
 	public	_getds
+	public  _getA9RCtrl
+	public  _getA9RStat
+
+_getA9RCtrl proc near
+	cli
+	push  cx
+
+	xor   cl,cl
+	xchg  cl,[ss:20h]
+	out   A9BProtectionOffW,al   ; Disable memory protection (any value will do)
+
+	in    ax,A9WControlRW        ; A9WControlRW
+
+	test  cl,cl
+	jz    dontundo_a9rctrl
+	out   A9BProtectionOnW,al    ; Enable memory protection (any value will do)
+
+dontundo_a9rctrl:
+	pop   cx
+	sti
+	retn
+_getA9RCtrl endp
+
+_getA9RStat proc near
+	cli
+	push  cx
+
+	xor   cl,cl
+	xchg  cl,[ss:20h]
+	out   A9BProtectionOffW,al   ; Disable memory protection (any value will do)
+
+	in    ax,A9WStatusR
+
+	test  cl,cl
+	jz    dontundo_a9rstat
+	out   A9BProtectionOnW,al    ; Enable memory protection (any value will do)
+
+dontundo_a9rstat:
+	pop   cx
+	sti
+	retn
+_getA9RStat endp
+
 
 _getcs	proc	near
 	push	cs

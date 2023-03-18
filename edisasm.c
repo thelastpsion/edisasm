@@ -330,6 +330,8 @@ GLREF_C VOID MEMCPYPSEL1(UWORD psel0, UWORD offsetseg7000, UWORD count, UBYTE *b
 GLREF_C VOID MEMCPYPSEL2(UWORD psel2, UWORD offsetseg8000, UWORD count, UBYTE *buf);
 GLREF_C UWORD GETCS(void);
 GLREF_C UWORD GETDS(void);
+GLREF_C UWORD GETA9RCTRL(void);
+GLREF_C UWORD GETA9RSTAT(void);
 
 
 LOCAL_C VOID cls(VOID)
@@ -1246,6 +1248,16 @@ TEXT buf[40];
   }
   else if (p_scmp("bank", cmd) == 0) {
     p_atos(buf, "Current ROM bank is %02x", bankno);
+    wInfoMsg(buf);
+  }
+  else if (p_scmp("a9rctrl", cmd) == 0) {
+    p_atos(buf, "A9RControl: 0x%04x", GETA9RCTRL());
+    println(buf);
+    wInfoMsg(buf);
+  }
+  else if (p_scmp("a9rstat", cmd) == 0) {
+    p_atos(buf, "A9RStatus: 0x%04x", GETA9RSTAT());
+    println(buf);
     wInfoMsg(buf);
   }
   else if (p_bcmpi("bank", 4, cmd, 4) == 0) {
