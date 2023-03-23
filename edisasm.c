@@ -799,29 +799,66 @@ INT b;
 }
 
 
+/*
+  Extracts two hex numbers from a string, separated by spaces.
+  It's used with the sendbanksX000() functions to pick which banks to send
+  across a PLP link. It calls p_stoa() to extract the two numbers, then does
+  some processing. Returns a status as an INT.
+*/
+LOCAL_C INT banknums(TEXT **bankargsptr, UINT *firstbankptr, UINT *lastbankptr) {
+  INT ret;
+
+  ret = p_stoa(bankargsptr, "%x %x", firstbankptr, lastbankptr);
+
+  switch (ret) {
+    case 0: // Got two arguments, everything's fine
+      break;
+    case -2: // E_GEN_ARG (not enough arguments, so there's only one)
+      *lastbankptr = *firstbankptr;
+      break;
+    default: // Any other error, we leave now
+      return -1; // miscellaneous bad arguments from p_stoa()
+  }
+ 
+  if (*firstbankptr > *lastbankptr) {
+    return -2; // First bank can't be bigger than the last bank
+  }
+
+  if (*firstbankptr > 0xFF || *lastbankptr > 0xFF || *firstbankptr < 0 || *lastbankptr < 0) {
+    return -3; // invalid number
+  }
+
+  return 0;
+}
+
+
 LOCAL_C VOID sendbanks9000selection(TEXT *bankargs) {
   UINT firstbank = 0, lastbank = 0;
   INT ret;
   TEXT szbuf[80];
   INT b;
 
-  ret = p_stoa(&bankargs, "%x %x", &firstbank, &lastbank);
+
+  ret = banknums(&bankargs, &firstbank, &lastbank);
 
   switch (ret) {
-    case 0: // Got two arguments, everything's fine
+    case 0:
       break;
-    case -2: // E_GEN_ARG (not enough arguments, so there's only one)
-      lastbank = firstbank;
-      break;
-    default: // Any other error, we leave now
+    case -1:
       println("Bad arguments.");
+      return;
+    case -2:
+      p_atos(szbuf, "First bank can't be bigger than the last bank! (%02x>%02x)", firstbank, lastbank);
+      println(szbuf);
+      return;
+    case -3:
+      println("Bank must be between 00 and FF!");
+      return;
+    default:
+      println("Unhandled error from banknums()");
       return;
   }
 
-  if (firstbank > lastbank) {
-    println("First bank can't be bigger than the last bank!");
-    return;
-  }
 
   if (firstbank == lastbank) {
     p_atos(szbuf, "Sending bank %02x...", firstbank);
@@ -1007,6 +1044,7 @@ INT b;
   }
 }
 
+
 LOCAL_C VOID sendbanks6000selection(TEXT *bankargs) {
   UINT firstbank = 0, lastbank = 0;
   INT ret;
@@ -1018,22 +1056,25 @@ LOCAL_C VOID sendbanks6000selection(TEXT *bankargs) {
     return;
   }
 
-  ret = p_stoa(&bankargs, "%x %x", &firstbank, &lastbank);
+
+  ret = banknums(&bankargs, &firstbank, &lastbank);
 
   switch (ret) {
-    case 0: // Got two arguments, everything's fine
+    case 0:
       break;
-    case -2: // E_GEN_ARG (not enough arguments, so there's only one)
-      lastbank = firstbank;
-      break;
-    default: // Any other error, we leave now
+    case -1:
       println("Bad arguments.");
       return;
-  }
-
-  if (firstbank > lastbank) {
-    println("First bank can't be bigger than the last bank!");
-    return;
+    case -2:
+      p_atos(szbuf, "First bank can't be bigger than the last bank! (%02x>%02x)", firstbank, lastbank);
+      println(szbuf);
+      return;
+    case -3:
+      println("Bank must be between 00 and FF!");
+      return;
+    default:
+      println("Unhandled error from banknums()");
+      return;
   }
 
   if (firstbank == lastbank) {
@@ -1045,8 +1086,8 @@ LOCAL_C VOID sendbanks6000selection(TEXT *bankargs) {
 
   for (b=firstbank; b<=lastbank; b++)
     sendbankPSEL0(b);
-
 }
+
 
 LOCAL_C VOID sendbanks7000()
 {
