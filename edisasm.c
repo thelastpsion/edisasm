@@ -394,14 +394,17 @@ P_POINT pp;
   gClrRect(&p,G_TRMODE_CLR);
 }
 
-LOCAL_C VOID println(TEXT *str)
-{
-  printAt(cx, cy, str, p_slen(str));
-  cy++;
-  cx=0;
-  if (cy==rows) {
+LOCAL_C VOID println(TEXT *str) {
+  if (cy == rows) {
     rackup();
     cy--;
+  }
+
+  printAt(cx, cy, str, p_slen(str));
+  // cx=0; // needed?
+
+  if (cy < rows) {
+    cy++;
   }
 }
 
