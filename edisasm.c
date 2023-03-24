@@ -283,8 +283,8 @@ LOCAL_D INT text_height=0; /* Height of the current font */
 LOCAL_D INT text_width=0; /* Width of the current font */
 LOCAL_D INT text_ascent=0; /* Ascent of the current font */
 LOCAL_D INT text_descent=0; /* Descent of the current font */
-LOCAL_D INT rows=16; /* how many rows available, minus edit box? */
-LOCAL_D INT cols=79; /* how many columns available? */
+LOCAL_D INT rows; //=16; /* how many rows available, minus edit box? */
+LOCAL_D INT cols; //=79; /* how many columns available? */
 LOCAL_D TEXT *maladdr="malformed address";
 
 /* Keyboard stuff */
@@ -293,8 +293,6 @@ LOCAL_D WMSG_KEY key;
 LOCAL_D WORD key_active=FALSE;
 
 #define EDITLEN 80
-#define SCREENWIDTH 480 /* agh, I can't be bothered with making this portable */
-#define SCREENHEIGHT 160
 #define FONT (WS_FONT_BASE+8)
 LOCAL_D P_SCR_SET_FONT Font;
 P_RECT rect;
@@ -859,7 +857,6 @@ LOCAL_C VOID sendbanks9000selection(TEXT *bankargs) {
   TEXT szbuf[80];
   INT b;
 
-
   ret = banknums(&bankargs, &firstbank, &lastbank);
 
   switch (ret) {
@@ -1377,10 +1374,8 @@ LOCAL_C VOID *CreateEditor(VOID)
 H_EDIT_BOX heb;
 P_RECT p;
   heb.maxchars=EDITLEN;
-  // heb.vulen=SCREENWIDTH - text_width;
   heb.vulen=machine_fullscreenwidth - text_width;
   heb.pos.x=0;
-  // heb.pos.y=SCREENHEIGHT - text_height - text_descent;
   heb.pos.y=machine_fullscreenheight - text_height - text_descent;
   heb.win=MainWid;
   heb.font=FONT;
@@ -1451,7 +1446,6 @@ G_GC gc;
 
   rect.tl.x=0;
   rect.tl.y=0;
-  // rect.br.x=SCREENWIDTH;
   rect.br.x=machine_fullscreenwidth;
   rect.br.y=rows * text_height + 4;
   gBorderRect(&rect, W_BORD_CORNER_1);
