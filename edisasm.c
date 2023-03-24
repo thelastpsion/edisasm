@@ -1313,6 +1313,8 @@ TEXT buf[40];
     sendssd(cmd+8);
   } else if (p_scmp("sysver", cmd) == 0) {
     sysver();
+  } else if (p_scmp("cls", cmd) == 0) {
+    cls();
   }
   else if (p_scmp("pixels", cmd) == 0) {
     p_atos(buf, "Screen size (x,y): %dx%d", machine_fullscreenwidth, machine_fullscreenheight);
@@ -1348,8 +1350,10 @@ H_EDIT_BOX heb;
 P_RECT p;
   heb.maxchars=EDITLEN;
   heb.vulen=SCREENWIDTH - text_width;
+  // heb.vulen=machine_fullscreenwidth - text_width;
   heb.pos.x=0;
   heb.pos.y=SCREENHEIGHT - text_height - text_descent;
+  // heb.pos.y=machine_fullscreenheight - text_height - text_descent;
   heb.win=MainWid;
   heb.font=FONT;
   heb.style=G_STY_MONO;
@@ -1414,6 +1418,7 @@ G_GC gc;
   rect.tl.x=0;
   rect.tl.y=0;
   rect.br.x=SCREENWIDTH;
+  // rect.br.x=machine_fullscreenwidth;
   rect.br.y=rows * text_height + 4;
   gBorderRect(&rect, W_BORD_CORNER_1);
   rect.tl.x+=2;
