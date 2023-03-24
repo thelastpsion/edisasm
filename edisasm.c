@@ -13,6 +13,7 @@
 *******************************************************************************/
 
 #include "dis.h"
+#include "machine.h"
 
 GLREF_D UWORD _UseFullScreen;
 LOCAL_D UINT MainWid;       /* ID of main window */
@@ -1313,6 +1314,11 @@ TEXT buf[40];
   } else if (p_scmp("sysver", cmd) == 0) {
     sysver();
   }
+  else if (p_scmp("pixels", cmd) == 0) {
+    p_atos(buf, "Screen size (x,y): %dx%d", machine_fullscreenwidth, machine_fullscreenheight);
+    println(buf);
+    wInfoMsg(buf);
+  }
   for (s=cmd,d=lastcmd; *s && !p_isspace(*s); s++,d++)
     *d=*s;
   *d='\0';
@@ -1428,6 +1434,8 @@ G_GC gc;
 
 GLDEF_C VOID main(VOID)
 {
+  machine_check();
+
   _UseFullScreen = TRUE;
   uCommonInit();
   SpecificInit();
