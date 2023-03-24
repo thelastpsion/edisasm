@@ -1109,10 +1109,18 @@ INT b;
 
 
 LOCAL_C VOID sysver() {
-  TEXT buf[40];
+  TEXT szbuf[40], szromver[6], szosver[6];
+  
+  p_atos(szromver, "%05x", p_romversion());
+  szromver[0] = szromver[1];
+  szromver[1] = '.';
 
-  p_atos(buf, "EPOC16: %04x   ROM: %04x", p_version(), p_romversion());
-  println(buf);
+  p_atos(szosver, "%05x", p_version());
+  szosver[0] = szosver[1];
+  szosver[1] = '.';
+
+  p_atos(szbuf, "EPOC16: %s   ROM: %s", szosver, szromver);
+  println(szbuf);
 }
 
 LOCAL_C VOID ssdinfo(TEXT *devname) {
