@@ -70,6 +70,7 @@ UINT port;
            or 3a emulator. */
         switch (p_romversion()) {
           case 0x325F : machine_type = MACH_EM_S3a; break;
+          case 0x520F : machine_type = MACH_EM_S3c; break;
           case 0x421A : machine_type = MACH_EM_SIENA; break;
           case 0x200F : machine_type = MACH_EM_WORKABOUT; break;
           default     : machine_type = MACH_UNKNOWN; break;
@@ -167,6 +168,16 @@ UINT port;
       machine_name = "Workabout Emulator";
       machine_fullscreencols = 40;
       machine_fullscreenrows = 10;
+      break;
+    case MACH_EM_S3c:
+      machine_fullscreenwidth = 480;
+      machine_fullscreenheight = 160;
+      machine_maxbaud = P_BAUD_56000;
+      machine_hasIrDA = TRUE;
+      machine_name = "3c Emulator";
+      machine_fullscreencols = 80;
+      machine_fullscreenrows = 18;
+      machine_canreturntickcount = TRUE;
       break;
   }
 }

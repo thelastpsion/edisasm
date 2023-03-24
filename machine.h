@@ -27,6 +27,7 @@
 #define MACH_HC           9
 #define MACH_WORKABOUT    10
 #define MACH_EM_WORKABOUT 11
+#define MACH_EM_S3c       12
 
 GLREF_D BYTE  machine_type;                   /* One of the MACH_ codes above */
 GLREF_D UWORD machine_fullscreenwidth;    /* Width of entire screen in pixels */
