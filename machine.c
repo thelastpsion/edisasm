@@ -91,7 +91,7 @@ UINT port;
       machine_hasIrDA = TRUE;
       machine_name = "Siena";
       machine_fullscreencols = 40;
-      machine_fullscreenrows = 18;
+      machine_fullscreenrows = 17;
       machine_canreturntickcount = TRUE;
       break;
     case MACH_EM_SIENA:
@@ -101,21 +101,21 @@ UINT port;
       machine_hasIrDA = TRUE;
       machine_name = "Siena Emulator";
       machine_fullscreencols = 40;
-      machine_fullscreenrows = 18;
+      machine_fullscreenrows = 17;
       break;
     case MACH_S3a:
       machine_fullscreenwidth = 480;
       machine_fullscreenheight = 160;
       machine_name = "Series 3a";
       machine_fullscreencols = 80;
-      machine_fullscreenrows = 18;
+      machine_fullscreenrows = 17;
       break;
     case MACH_EM_S3a:
       machine_fullscreenwidth = 480;
       machine_fullscreenheight = 160;
       machine_name = "3a Emulator";
       machine_fullscreencols = 80;
-      machine_fullscreenrows = 18;
+      machine_fullscreenrows = 17;
       break;
     case MACH_S3c:
       machine_fullscreenwidth = 480;
@@ -124,7 +124,7 @@ UINT port;
       machine_hasIrDA = TRUE;
       machine_name = "Series 3c";
       machine_fullscreencols = 80;
-      machine_fullscreenrows = 18;
+      machine_fullscreenrows = 17;
       machine_canreturntickcount = TRUE;
       break;
     case MACH_S3:
@@ -176,7 +176,7 @@ UINT port;
       machine_hasIrDA = TRUE;
       machine_name = "3c Emulator";
       machine_fullscreencols = 80;
-      machine_fullscreenrows = 18;
+      machine_fullscreenrows = 17;
       machine_canreturntickcount = TRUE;
       break;
   }
