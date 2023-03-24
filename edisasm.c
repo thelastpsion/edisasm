@@ -1458,7 +1458,7 @@ G_GC gc;
   if (!ebH)
     p_exit(-1);
   printlnc("EDisAsm - SIBO/EPOC16 Exploratory Tool");
-  printlnc("v0.0.4 (2023-03-24)"); // TODO: there must be a better way to set this at build time
+  printlnc("v0.0.5 (2023-03-24)"); // TODO: there must be a better way to set this at build time
   printlnc("Original version by Matt Gumbley,");
   printlnc("updated 2023 by Alex Brown.");
   println("");
