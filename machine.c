@@ -87,7 +87,7 @@ UINT port;
     case MACH_SIENA:
       machine_fullscreenwidth = 240;
       machine_fullscreenheight = 160;
-      machine_maxbaud = P_BAUD_56000;
+      machine_maxbaud = P_BAUD_19200;
       machine_hasIrDA = TRUE;
       machine_name = "Siena";
       machine_fullscreencols = 40;
@@ -97,7 +97,7 @@ UINT port;
     case MACH_EM_SIENA:
       machine_fullscreenwidth = 240;
       machine_fullscreenheight = 160;
-      machine_maxbaud = P_BAUD_56000;
+      machine_maxbaud = P_BAUD_19200;
       machine_hasIrDA = TRUE;
       machine_name = "Siena Emulator";
       machine_fullscreencols = 40;
