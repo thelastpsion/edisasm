@@ -400,8 +400,23 @@ LOCAL_C VOID println(TEXT *str) {
     cy--;
   }
 
+  cx = 0; // just in case
   printAt(cx, cy, str, p_slen(str));
-  // cx=0; // needed?
+
+  if (cy < rows) {
+    cy++;
+  }
+}
+
+LOCAL_C VOID printlnc(TEXT *str) {
+  if (cy == rows) {
+    rackup();
+    cy--;
+  }
+
+  cx = (cols / 2) - (p_slen(str) / 2); // roughly centre?
+  printAt(cx, cy, str, p_slen(str));
+  cx = 0; // clean things up
 
   if (cy < rows) {
     cy++;
@@ -1427,7 +1442,7 @@ G_GC gc;
   gSetGC(0,G_GC_MASK_FONT|G_GC_MASK_STYLE,&gc);
 
   if (machine_fullscreenrows) {
-    rows = machine_fullscreenrows - 2;
+    rows = machine_fullscreenrows - 1;
     cols = machine_fullscreencols - 1;
   } else {
     rows = ((machine_fullscreenheight-(text_height*2)-4)/text_height);
@@ -1448,9 +1463,12 @@ G_GC gc;
   ebH=CreateEditor();
   if (!ebH)
     p_exit(-1);
-  println("EDisAsm v0.0.4 -=- SIBO/EPOC16 Exploratory Tool");
-  println("Original version by Matt Gumbley, updated 2023 by Alex Brown");
-  println("Type 'help' for help, and 'exit' to exit.");
+  printlnc("EDisAsm - SIBO/EPOC16 Exploratory Tool");
+  printlnc("v0.0.4 (2023-03-24)"); // TODO: there must be a better way to set this at build time
+  printlnc("Original version by Matt Gumbley,");
+  printlnc("updated 2023 by Alex Brown.");
+  println("");
+  println("Type 'help' for help, 'exit' to exit.");
   hEBEmphasise(ebH,TRUE);
   bankno = p_getrombank();
 }
