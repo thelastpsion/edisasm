@@ -674,7 +674,7 @@ UWORD prevbank=p_getrombank();
   if (p_open(&fd, fname, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0)
     println("Can't create bank listing file");
   else {
-    println("Creating....");
+    println("Creating...");
     println(fname);
     p_write(fd,head,p_slen(head));
 
@@ -781,9 +781,9 @@ UWORD prevbank=p_getrombank();
     println(szbuf);
   }
   else {
-    println("Creating....");
+    println("Creating...");
     println(szbuf);
-    println("To stop, kill EDisAsm from the System Screen");
+    println("To stop, kill EDisAsm from System Screen");
     while (seg<lastseg) {
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
@@ -916,9 +916,9 @@ return;*/
     println(szbuf);
   }
   else {
-    println("Creating....");
+    println("Creating...");
     println(szbuf);
-    println("To stop, kill EDisAsm from the System Screen");
+    println("To stop, kill EDisAsm from System Screen");
     while (seg<lastseg) {
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
@@ -979,9 +979,9 @@ UBYTE prevbank=GETPSEL0();
     println(szbuf);
   }
   else {
-    println("Creating....");
+    println("Creating...");
     println(szbuf);
-    println("To stop, kill EDisAsm from the System Screen");
+    println("To stop, kill EDisAsm from System Screen");
     while (seg<lastseg) {
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
@@ -1014,9 +1014,9 @@ UBYTE prevbank=GETPSEL1();
     println(szbuf);
   }
   else {
-    println("Creating....");
+    println("Creating...");
     println(szbuf);
-    println("To stop, kill EDisAsm from the System Screen");
+    println("To stop, kill EDisAsm from System Screen");
     while (seg<lastseg) {
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
@@ -1193,7 +1193,7 @@ LOCAL_C VOID sendssd(TEXT *devname) {
 
   println("Creating...");
   println(szbuf);
-  println("To stop, kill EDisAsm from the System Screen");
+  println("To stop, kill EDisAsm from System Screen");
   for (i = 0; i < dinfo.size; i = i+BLOCKSIZE) {
     curblock = i / 256;
     p_atos(szbuf, "Writing block %d", curblock);
