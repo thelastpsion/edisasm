@@ -1349,11 +1349,11 @@ LOCAL_C VOID *CreateEditor(VOID)
 H_EDIT_BOX heb;
 P_RECT p;
   heb.maxchars=EDITLEN;
-  heb.vulen=SCREENWIDTH - text_width;
-  // heb.vulen=machine_fullscreenwidth - text_width;
+  // heb.vulen=SCREENWIDTH - text_width;
+  heb.vulen=machine_fullscreenwidth - text_width;
   heb.pos.x=0;
-  heb.pos.y=SCREENHEIGHT - text_height - text_descent;
-  // heb.pos.y=machine_fullscreenheight - text_height - text_descent;
+  // heb.pos.y=SCREENHEIGHT - text_height - text_descent;
+  heb.pos.y=machine_fullscreenheight - text_height - text_descent;
   heb.win=MainWid;
   heb.font=FONT;
   heb.style=G_STY_MONO;
@@ -1413,12 +1413,18 @@ G_GC gc;
   gc.style=Font.style;
   gSetGC(0,G_GC_MASK_FONT|G_GC_MASK_STYLE,&gc);
 
-/*  rows=((SCREENHEIGHT-(text_height*2)-4)/text_height);*/
+  if (machine_fullscreenrows) {
+    rows = machine_fullscreenrows - 2;
+    cols = machine_fullscreencols - 1;
+  } else {
+    rows = ((machine_fullscreenheight-(text_height*2)-4)/text_height);
+    cols = 40;
+  }
 
   rect.tl.x=0;
   rect.tl.y=0;
-  rect.br.x=SCREENWIDTH;
-  // rect.br.x=machine_fullscreenwidth;
+  // rect.br.x=SCREENWIDTH;
+  rect.br.x=machine_fullscreenwidth;
   rect.br.y=rows * text_height + 4;
   gBorderRect(&rect, W_BORD_CORNER_1);
   rect.tl.x+=2;
