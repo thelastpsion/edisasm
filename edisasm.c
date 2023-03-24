@@ -503,6 +503,7 @@ UWORD prevbank=p_getrombank();
     }
     printAt(0,y,LINE,78);
   }
+  cy = rows; // otherwise any regular println() will start at the top of the screen
 }
 
 LOCAL_C VOID dump_words(VOID)
@@ -539,6 +540,7 @@ UWORD prevbank=p_getrombank();
     }
     printAt(0,y,LINE,78);
   }
+  cy = rows; // otherwise any regular println() will start at the top of the screen
 }
 
 
