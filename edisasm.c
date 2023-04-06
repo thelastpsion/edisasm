@@ -1210,6 +1210,75 @@ LOCAL_C VOID sendssd(TEXT *devname) {
 }
 
 
+LOCAL_C VOID savessd(TEXT *args) {
+ #define BLOCKSIZE 256
+  P_DINFO dinfo;
+  INT ret;
+  TEXT szbuf[40];
+  TEXT fulldevsrcname[8];
+  TEXT fulldevdestname[8];
+  TEXT tinydevsrcname;
+  TEXT tinydevdestname;
+  UWORD curblock;
+  TEXT *devsrc = "";
+  TEXT *devdest = "";
+  
+
+  LONG i;
+
+  static UBYTE buf[BLOCKSIZE];
+
+  VOID *fd;
+
+  p_stoa(&args, "%s %s", devsrc, devdest);
+
+  p_atos(fulldevsrcname, "LOC::%c:", p_toupper(devsrc[0]));
+  p_atos(fulldevdestname, "LOC::%c:", p_toupper(devdest[0])); // TODO: this needs to be a proper path in the future
+
+  ret = p_dinfo(fulldevsrcname, &dinfo);
+  if (ret < 0) {
+    println("Failed.");
+    return;
+  }
+
+
+  tinydevsrcname = fulldevsrcname[5]; // just get the drive letter
+  tinydevdestname = fulldevdestname[5]; // just get the drive letter
+
+  if (tinydevsrcname == tinydevdestname) {
+    println("Source and destination can't be the same.");
+    return;
+  }
+
+  // TODO: Check file size vs SSD size, to make sure the file's not too big for the SSD
+  // TODO: Check that the file doesn't already exist
+
+  p_atos(szbuf,"LOC::%s:\\%s.SSD", tinydevdestname, dinfo.name);
+  if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
+    println("Can't create output file");
+    println(szbuf);
+    return;
+  }
+
+  println("Creating...");
+  println(szbuf);
+  println("To stop, kill EDisAsm from System Screen");
+  for (i = 0; i < dinfo.size; i = i+BLOCKSIZE) {
+    curblock = i / 256;
+    p_atos(szbuf, "Writing block %d", curblock);
+    wInfoMsg(szbuf);
+    ret = p_locreadpdd(tinydevsrcname, &i, buf, BLOCKSIZE);
+    if (ret < 0) {
+      println("ERROR!");
+      return;
+    }
+    p_write(fd, buf, BLOCKSIZE);
+  }
+  println("done.");
+  p_close(fd);
+}
+
+
 LOCAL_C VOID help(VOID)
 {
 #define HELPSTRINGS 14
@@ -1336,6 +1405,8 @@ TEXT buf[40];
     ssdinfo(cmd+8);
   } else if (p_bcmpi("sendssd ", 8, cmd, 8) == 0) {
     sendssd(cmd+8);
+  } else if (p_bcmpi("savessd ", 8, cmd, 8) == 0) {
+    savessd(cmd+8);
   } else if (p_scmp("sysver", cmd) == 0) {
     sysver();
   } else if (p_scmp("cls", cmd) == 0) {
