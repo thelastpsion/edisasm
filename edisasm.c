@@ -1210,7 +1210,7 @@ LOCAL_C VOID sendssd(TEXT *devname) {
 }
 
 
-LOCAL_C VOID savessd(TEXT *args) {
+LOCAL_C VOID savessd(TEXT *devargs) {
  #define BLOCKSIZE 256
   P_DINFO dinfo;
   INT ret;
@@ -1222,15 +1222,48 @@ LOCAL_C VOID savessd(TEXT *args) {
   UWORD curblock;
   TEXT *devsrc = "";
   TEXT *devdest = "";
-  
 
   LONG i;
 
-  static UBYTE buf[BLOCKSIZE];
+  UBYTE buf[BLOCKSIZE];
 
   VOID *fd;
+  TEXT *devargsptr = devargs;
 
-  p_stoa(&args, "%s %s", devsrc, devdest);
+  p_atos(szbuf, "%d", devargsptr);
+  println(devargs);
+  println(szbuf);
+  println(devsrc);
+  println(devdest);
+
+
+  ret = p_stoa(&devargsptr, "%s %s", devsrc, devdest);
+  p_atos(szbuf, "%d", devargsptr);
+  println(szbuf);
+  println(devsrc);
+  println(devdest);
+
+  if (ret < 0) {
+    switch (ret) {
+      case E_GEN_OVER:
+        println("ERROR: E_GEN_OVER");
+        break;
+      case E_GEN_FAIL:
+        println("ERROR: E_GEN_FAIL");
+        break;
+      case E_GEN_ARG:
+        println("ERROR: E_GEN_ARG");
+        break;
+      default:
+        p_atos(szbuf, "ERROR: Unknown (%d)", ret);
+        println(szbuf);
+    }
+    return;
+  }
+
+
+  p_atos(szbuf, "        %s %s", devsrc, devdest);
+  println(szbuf);
 
   p_atos(fulldevsrcname, "LOC::%c:", p_toupper(devsrc[0]));
   p_atos(fulldevdestname, "LOC::%c:", p_toupper(devdest[0])); // TODO: this needs to be a proper path in the future
@@ -1250,26 +1283,64 @@ LOCAL_C VOID savessd(TEXT *args) {
     return;
   }
 
+
+
+
+  p_atos(szbuf, "Source: %s (%s)  Destination: %s", fulldevsrcname, dinfo.name, fulldevdestname);
+  println(szbuf);
+
+  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
+  // println(szbuf);
+
+
   // TODO: Check file size vs SSD size, to make sure the file's not too big for the SSD
   // TODO: Check that the file doesn't already exist
 
-  p_atos(szbuf,"LOC::%s:\\%s.SSD", tinydevdestname, dinfo.name);
+  p_atos(szbuf,"%s\\%s.SSD", fulldevdestname, dinfo.name);
+  println(szbuf);
+
+
+  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
+  // println(szbuf);
+
+
   if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
     println("Can't create output file");
     println(szbuf);
     return;
   }
 
+  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
+  // println(szbuf);
+
+
   println("Creating...");
   println(szbuf);
   println("To stop, kill EDisAsm from System Screen");
+
+  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
+  // println(szbuf);
+
+
   for (i = 0; i < dinfo.size; i = i+BLOCKSIZE) {
     curblock = i / 256;
     p_atos(szbuf, "Writing block %d", curblock);
     wInfoMsg(szbuf);
     ret = p_locreadpdd(tinydevsrcname, &i, buf, BLOCKSIZE);
+    // ret = p_locreadpdd(67, &i, buf, BLOCKSIZE); // Force pulling from LOC::C:
     if (ret < 0) {
-      println("ERROR!");
+      switch (ret) {
+        case E_GEN_OS:
+          println("ERROR: Medium not mounted");
+          break;
+        case E_FILE_CORRUPT:
+          println("ERROR: E_FILE_CORRUPT (Offset greater than SSD)");
+          break;
+        default:
+          p_atos(szbuf, "ERROR: Unknown (%d) %d %d", ret, tinydevsrcname, tinydevdestname);
+          println(szbuf);
+      }
+      p_close(fd);
       return;
     }
     p_write(fd, buf, BLOCKSIZE);

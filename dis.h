@@ -10,6 +10,7 @@
 #include <p_config.h>       /* defines E_CONFIG struct */
 #include <p_math.h>         /* defines FP functions */
 #include <p_crc.h>          /* defines CRC functions */
+#include <p_gen.h>
 
 #include <epoc.h>           /* general Epoc definitions */
 #include <wlib.h>           /* defines all Window Server library functions */
