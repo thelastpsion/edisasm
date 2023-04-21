@@ -421,6 +421,23 @@ LOCAL_C VOID printlnc(TEXT *str) {
   }
 }
 
+LOCAL_C VOID niceerror_E_FILE(INT err) {
+  switch (err) {
+    case E_FILE_DEVICE:
+      println("E_FILE_DEVICE: Invalid or non-existent device speficied.");
+      return;
+    case E_FILE_NOTREADY:
+      println("E_FILE_NOTREADY: Nothing in drive.");
+      return;
+    case E_FILE_CORRUPT:
+      println("E_FILE_CORRUPT: No valid boot record found - unformatted?");
+      return;
+    case E_FILE_UNKNOWN:
+      println("E_FILE_UNKNOWN: No idea what the medium is!");
+      return;
+  }
+}
+
 LOCAL_C VOID gotoxy(INT x, INT y)
 {
   cx = x;
@@ -1175,14 +1192,12 @@ LOCAL_C VOID sendssd(TEXT *devname) {
 
   ret = p_dinfo(fulldevname, &dinfo);
   if (ret < 0) {
-    println("Failed.");
+    println("ERROR: Can't open source device");
+    niceerror_E_FILE(ret);
     return;
   }
 
-
   tinydevname = fulldevname[5]; // just get the drive letter
-
-
 
   p_atos(szbuf,"REM::C:\\%s.SSD", dinfo.name);
   if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
@@ -1200,49 +1215,54 @@ LOCAL_C VOID sendssd(TEXT *devname) {
     wInfoMsg(szbuf);
     ret = p_locreadpdd(tinydevname, &i, buf, BLOCKSIZE);
     if (ret < 0) {
-      println("ERROR!");
+      switch (ret) {
+        case E_GEN_OS:
+          println("ERROR: Medium not mounted");
+          break;
+        case E_FILE_CORRUPT:
+          println("ERROR: E_FILE_CORRUPT (Offset greater than SSD)");
+          break;
+        default:
+          p_atos(szbuf, "ERROR: Unknown (%d)", ret);
+          println(szbuf);
+      }
+      p_close(fd);
       return;
     }
     p_write(fd, buf, BLOCKSIZE);
   }
-  println("done.");
+  println("Done.");
   p_close(fd);
 }
 
 
 LOCAL_C VOID savessd(TEXT *devargs) {
  #define BLOCKSIZE 256
+  TEXT szbuf[40];
   P_DINFO dinfo;
   INT ret;
-  TEXT szbuf[40];
-  TEXT fulldevsrcname[8];
-  TEXT fulldevdestname[8];
-  TEXT tinydevsrcname;
-  TEXT tinydevdestname;
+
+  TEXT fulldevsrcname[8], fulldevdestname[8];
+  TEXT smalldevsrcname[2], smalldevdestname[2];
+
   UWORD curblock;
-  TEXT *devsrc = "";
-  TEXT *devdest = "";
+  UBYTE buf[BLOCKSIZE];
+  ULONG devdestfree = 0;
 
   LONG i;
 
-  UBYTE buf[BLOCKSIZE];
-
   VOID *fd;
-  TEXT *devargsptr = devargs;
+  TEXT *devargsptr;
+  
 
-  p_atos(szbuf, "%d", devargsptr);
-  println(devargs);
-  println(szbuf);
-  println(devsrc);
-  println(devdest);
+  if (p_slen(devargs) != 3 || devargs[1] != ' ') {
+    println("ERROR: Invalid argument(s)");
+    return;
+  }
 
+  devargsptr = devargs;
 
-  ret = p_stoa(&devargsptr, "%s %s", devsrc, devdest);
-  p_atos(szbuf, "%d", devargsptr);
-  println(szbuf);
-  println(devsrc);
-  println(devdest);
-
+  ret = p_stoa(&devargsptr, "%c %c", smalldevsrcname, smalldevdestname);
   if (ret < 0) {
     switch (ret) {
       case E_GEN_OVER:
@@ -1261,73 +1281,65 @@ LOCAL_C VOID savessd(TEXT *devargs) {
     return;
   }
 
+  smalldevsrcname[0] = p_toupper(smalldevsrcname[0]);
+  smalldevdestname[0] = p_toupper(smalldevdestname[0]);
 
-  p_atos(szbuf, "        %s %s", devsrc, devdest);
-  println(szbuf);
+  if (smalldevsrcname[0] == smalldevdestname[0]) {
+    println("ERROR: Source and destination can't be the same");
+    return;
+  }
 
-  p_atos(fulldevsrcname, "LOC::%c:", p_toupper(devsrc[0]));
-  p_atos(fulldevdestname, "LOC::%c:", p_toupper(devdest[0])); // TODO: this needs to be a proper path in the future
+  p_atos(fulldevsrcname, "LOC::%c:", smalldevsrcname[0]);
+  p_atos(fulldevdestname, "LOC::%c:", smalldevdestname[0]); // TODO: this needs to be a proper path in the future
+
+  ret = p_dinfo(fulldevdestname, &dinfo);
+  if (ret < 0) {
+    println("ERROR: Can't open destination device");
+    niceerror_E_FILE(ret);
+    return;
+  }
+  if ((dinfo.mediatype % 256) == P_FMEDIA_ROM || (dinfo.mediatype % 256) == P_FMEDIA_WRITEPROTECTED) {
+    println("ERROR: Destination device is read-only");
+    return;
+  }
+
+  devdestfree = dinfo.free;
 
   ret = p_dinfo(fulldevsrcname, &dinfo);
   if (ret < 0) {
-    println("Failed.");
+    println("ERROR: Can't open source device");
+    niceerror_E_FILE(ret);
     return;
   }
 
-
-  tinydevsrcname = fulldevsrcname[5]; // just get the drive letter
-  tinydevdestname = fulldevdestname[5]; // just get the drive letter
-
-  if (tinydevsrcname == tinydevdestname) {
-    println("Source and destination can't be the same.");
-    return;
-  }
-
-
-
-
-  p_atos(szbuf, "Source: %s (%s)  Destination: %s", fulldevsrcname, dinfo.name, fulldevdestname);
-  println(szbuf);
-
-  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
+  // p_atos(szbuf, "Source: %s (Name: %s)  Destination: %s", fulldevsrcname, dinfo.name, fulldevdestname);
+  // p_atos(szbuf, "Source: %s  Destination: %s", fulldevsrcname, fulldevdestname);
   // println(szbuf);
 
-
-  // TODO: Check file size vs SSD size, to make sure the file's not too big for the SSD
   // TODO: Check that the file doesn't already exist
 
+  if (dinfo.size > devdestfree) {
+    println("Not enough free space on destination.");
+    return;
+  }
+
   p_atos(szbuf,"%s\\%s.SSD", fulldevdestname, dinfo.name);
-  println(szbuf);
-
-
-  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
-  // println(szbuf);
-
 
   if (p_open(&fd, szbuf, P_FSTREAM|P_FREPLACE|P_FUPDATE)!=0) {
-    println("Can't create output file");
+    println("ERROR: Can't create output file");
     println(szbuf);
     return;
   }
-
-  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
-  // println(szbuf);
-
 
   println("Creating...");
   println(szbuf);
   println("To stop, kill EDisAsm from System Screen");
 
-  // p_atos(szbuf, "Source: %d  Destination: %d", tinydevsrcname, tinydevdestname);
-  // println(szbuf);
-
-
   for (i = 0; i < dinfo.size; i = i+BLOCKSIZE) {
     curblock = i / 256;
     p_atos(szbuf, "Writing block %d", curblock);
     wInfoMsg(szbuf);
-    ret = p_locreadpdd(tinydevsrcname, &i, buf, BLOCKSIZE);
-    // ret = p_locreadpdd(67, &i, buf, BLOCKSIZE); // Force pulling from LOC::C:
+    ret = p_locreadpdd(smalldevsrcname[0], &i, buf, BLOCKSIZE);
     if (ret < 0) {
       switch (ret) {
         case E_GEN_OS:
@@ -1337,7 +1349,7 @@ LOCAL_C VOID savessd(TEXT *devargs) {
           println("ERROR: E_FILE_CORRUPT (Offset greater than SSD)");
           break;
         default:
-          p_atos(szbuf, "ERROR: Unknown (%d) %d %d", ret, tinydevsrcname, tinydevdestname);
+          p_atos(szbuf, "ERROR: Unknown (%d)", ret);
           println(szbuf);
       }
       p_close(fd);
@@ -1345,7 +1357,7 @@ LOCAL_C VOID savessd(TEXT *devargs) {
     }
     p_write(fd, buf, BLOCKSIZE);
   }
-  println("done.");
+  println("Done.");
   p_close(fd);
 }
 
