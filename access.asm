@@ -158,54 +158,54 @@ SelectChannel5		equ	(mask A9MPack5Enable)
 
 _getA9RCtrl proc near
 	cli
-	push  cx
+	push cx
 
-	xor   cl,cl
-	xchg  cl,[ss:20h]
-	out   A9BProtectionOffW,al   ; Disable memory protection (any value will do)
+	xor  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al   ; Disable memory protection (any value will do)
 
-	in    ax,A9WControlRW        ; A9WControlRW
+	in   ax,A9WControlRW        ; A9WControlRW
 
-	test  cl,cl
-	jz    dontundo_a9rctrl
-	out   A9BProtectionOnW,al    ; Enable memory protection (any value will do)
+	test cl,cl
+	jz   dontundo_a9rctrl
+	out  A9BProtectionOnW,al    ; Enable memory protection (any value will do)
 
 dontundo_a9rctrl:
-	pop   cx
+	pop  cx
 	sti
 	retn
 _getA9RCtrl endp
 
 _getA9RStat proc near
 	cli
-	push  cx
+	push cx
 
-	xor   cl,cl
-	xchg  cl,[ss:20h]
-	out   A9BProtectionOffW,al   ; Disable memory protection (any value will do)
+	xor  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al   ; Disable memory protection (any value will do)
 
-	in    ax,A9WStatusR
+	in   ax,A9WStatusR
 
-	test  cl,cl
-	jz    dontundo_a9rstat
-	out   A9BProtectionOnW,al    ; Enable memory protection (any value will do)
+	test cl,cl
+	jz   dontundo_a9rstat
+	out  A9BProtectionOnW,al    ; Enable memory protection (any value will do)
 
 dontundo_a9rstat:
-	pop   cx
+	pop  cx
 	sti
 	retn
 _getA9RStat endp
 
 
 _getcs	proc	near
-	push	cs
-	pop	ax
+	push cs
+	pop  ax
 	retn
 _getcs	endp
 
 _getds	proc	near
-	push	ds
-	pop	ax
+	push ds
+	pop  ax
 	retn
 _getds	endp
 
@@ -218,20 +218,19 @@ _getpsel0	proc	near
 
 	cli
 
-	push	cx
-	sub	cl,cl
-	xchg	cl,[ss:20h]
-	out	15h,al	; A9BProtectionOffW
+	push cx
+	sub  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
-	out	15h,al	; disable memory protection
-	in	al,28h	; PSEL0
-	and	ax,00ffh
+	in   al,A9BPageSelect6000RW  ; Set PSEL0
+	and  ax,00ffh
 
-	test	cl,cl
-	jz	dontundo_gp0
-	out	14h,al	; A9BProtectionOnW
+	test cl,cl
+	jz   dontundo_gp0
+	out  A9BProtectionOnW,al     ; Enable memory protection (any value will do)
 dontundo_gp0:
-	pop	cx
+	pop  cx
 	sti
 	retn
 _getpsel0	endp
@@ -239,19 +238,19 @@ _getpsel0	endp
 _setpsel0	proc	near
 	cli
 
-	push	cx
-	sub	cl,cl
-	xchg	cl,[ss:20h]
-	out	15h,al	; A9BProtectionOffW
+	push cx
+	sub  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
-	and	ax,00ffh
-	out	28h,al	; A9BPageSelect6000
+	and  ax,00ffh
+	out  A9BPageSelect6000RW,al  ; Get PSEL0
 
-	test	cl,cl
-	jz	dontundo_sp0
-	out	14h,al	; A9BProtectionOnW
+	test cl,cl
+	jz   dontundo_sp0
+	out  A9BProtectionOnW,al     ; Enable memory protection (any value will do)
 dontundo_sp0:
-	pop	cx
+	pop  cx
 
 	sti
 	retn
