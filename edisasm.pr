@@ -1,8 +1,17 @@
 #system epoc img
 #set epocinit=iplib
 #model small jpi
+
+--- Compile
 #compile machine
 #compile edisasm
+
+--- Linking
 #pragma link(access.obj)
 #pragma link(hwif.lib)
 #link %main
+
+--- Clean-up
+#file delete %main.exe
+#file copy %main.img %main.app
+#file delete %main.img
