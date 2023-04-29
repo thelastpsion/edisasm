@@ -433,7 +433,7 @@ LOCAL_C VOID niceerror_E_FILE(INT err)
   switch (err)
   {
   case E_FILE_DEVICE:
-    println("E_FILE_DEVICE: Invalid or non-existent device speficied.");
+    println("E_FILE_DEVICE: Invalid or non-existent device specified.");
     return;
   case E_FILE_NOTREADY:
     println("E_FILE_NOTREADY: Nothing in drive.");
@@ -1456,7 +1456,8 @@ LOCAL_C VOID help(VOID)
       "",
       "NB: sendrom384, sendram384, sendbanksX000 work, others might not",
   };
-  int i;
+  UINT i;
+
   cls();
   for (i = 0; i < HELPSTRINGS; i++)
     println(helpstr[i]);
