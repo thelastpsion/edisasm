@@ -3,3 +3,7 @@
 **/*.OBJ
 !ACCESS.OBJ
 INSTALL/**
+**/*.DBD
+**/*.SYM
+/access.lst
+/ACCESS.LST
