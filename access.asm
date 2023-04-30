@@ -213,17 +213,16 @@ _getds	endp
 ; Thanks to Patrick for memcpy :-)
 ; Thanks to Simon for the values of PSEL0..3 ;-)
 
-
+;;; PSEL0
 _getpsel0	proc	near
-
 	cli
-
 	push cx
+
 	sub  cl,cl
 	xchg cl,[ss:20h]
 	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
-	in   al,A9BPageSelect6000RW  ; Set PSEL0
+	in   al,A9BPageSelect6000RW  ; Get PSEL0
 	and  ax,00ffh
 
 	test cl,cl
@@ -237,14 +236,14 @@ _getpsel0	endp
 	
 _setpsel0	proc	near
 	cli
-
 	push cx
+
 	sub  cl,cl
 	xchg cl,[ss:20h]
 	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
 	and  ax,00ffh
-	out  A9BPageSelect6000RW,al  ; Get PSEL0
+	out  A9BPageSelect6000RW,al  ; Set PSEL0
 
 	test cl,cl
 	jz   dontundo_sp0
@@ -256,83 +255,91 @@ dontundo_sp0:
 	retn
 _setpsel0	endp
 
-
+;;; PSEL1
 _getpsel1	proc	near
-
 	cli
+	push cx
 
-	push	cx
-	sub	cl,cl
-	xchg	cl,[ss:20h]
-	out	15h,al	; A9BProtectionOffW
+	sub  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
-	out	15h,al	; disable memory protection
-	in	al,28h	; PSEL0
-	and	ax,00ffh
+	in   al,A9BPageSelect7000RW  ; Get PSEL1
+	and  ax,00ffh
 
-	test	cl,cl
-	jz	dontundo_gp1
-	out	14h,al	; A9BProtectionOnW
+	test cl,cl
+	jz   dontundo_gp1
+	out  A9BProtectionOnW,al     ; Enable memory protection (any value will do)
 dontundo_gp1:
-	pop	cx
+	pop  cx
 	sti
 	retn
 _getpsel1	endp
 	
 _setpsel1	proc	near
 	cli
+	push cx
 
-	push	cx
-	sub	cl,cl
-	xchg	cl,[ss:20h]
-	out	15h,al	; A9BProtectionOffW
+	sub  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
-	and	ax,00ffh
-	out	28h,al	; A9BPageSelect6000
+	and  ax,00ffh
+	out  A9BPageSelect7000RW,al  ; Set PSEL1
 
-	test	cl,cl
-	jz	dontundo_sp1
-	out	14h,al	; A9BProtectionOnW
+	test cl,cl
+	jz   dontundo_sp1
+	out  A9BProtectionOnW,al     ; Enable memory protection (any value will do)
 dontundo_sp1:
-	pop	cx
+	pop  cx
 
 	sti
 	retn
 _setpsel1	endp
 
+;;; PSEL2
 _getpsel2	proc	near
-
 	cli
+	push cx
 
-	push	cx
-	sub	cl,cl
-	xchg	cl,[ss:20h]
-	out	15h,al	; A9BProtectionOffW
+	sub  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
-	out	15h,al	; disable memory protection
-	in	al,2ah	; PSEL2
-	and	ax,00ffh
+	in   al,A9BPageSelect8000RW  ; Get PSEL2
+	and  ax,00ffh
 
-	test	cl,cl
-	jz	dontundo_gp2
-	out	14h,al	; A9BProtectionOnW
+	test cl,cl
+	jz   dontundo_gp2
+	out  A9BProtectionOnW,al     ; Enable memory protection (any value will do)
 dontundo_gp2:
-	pop	cx
+	pop  cx
 	sti
 	retn
 _getpsel2	endp
 	
 _setpsel2	proc	near
 	cli
+	push cx
 
-	push	cx
-	sub	cl,cl
-	xchg	cl,[ss:20h]
-	out	15h,al	; A9BProtectionOffW
+	sub  cl,cl
+	xchg cl,[ss:20h]
+	out  A9BProtectionOffW,al    ; Disable memory protection (any value will do)
 
-	and	ax,00ffh
-	out	2ah,al	; A9BPageSelect8000
+	and  ax,00ffh
+	out  A9BPageSelect8000RW,al  ; Set PSEL2
 
+	test cl,cl
+	jz   dontundo_sp2
+	out  A9BProtectionOnW,al     ; Enable memory protection (any value will do)
+dontundo_sp2:
+	pop  cx
+
+	sti
+	retn
+_setpsel2	endp
+
+; Old notes (after out A9BPageSelect8000RW):
 	; may need out 14h,al to re-enable memory protection?
 	; that's what HwRomBankSet does after out 0x2b,al (PSEL3)
 	; HwRomBankSet doesn't touch the watchdog, and HwRomBankGet
@@ -348,17 +355,7 @@ _setpsel2	proc	near
 	; A000:F971 ins from 2C, ands this with CF and outs it to port 10 (?!?)
 	; (A9WResetWatchDogW)
 	; xors that with 10 and outs that to 2C (repeated, to toggle bit 4)
-	; 
-	test	cl,cl
-	jz	dontundo_sp2
-	out	14h,al	; A9BProtectionOnW
-dontundo_sp2:
-	pop	cx
 
-	sti
-	retn
-_setpsel2	endp
-;
 ; Here is HwRomBankSet:
 ;>00000000  1E                push ds
 ;>00000001  53                push bx
@@ -396,6 +393,7 @@ _setpsel2	endp
 ;	sti
 ;	retn
 ;_access	endp
+
 
 _access	proc	near
 
