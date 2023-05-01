@@ -873,7 +873,7 @@ LOCAL_C VOID sendbanks9000()
     sendbank(b);
 }
 
-/*
+/**
   Extracts two hex numbers from a string, separated by spaces.
   It's used with the sendbanksX000() functions to pick which banks to send
   across a PLP link. It calls p_stoa() to extract the two numbers, then does
@@ -887,12 +887,12 @@ LOCAL_C INT banknums(TEXT **bankargsptr, UINT *firstbankptr, UINT *lastbankptr)
 
   switch (ret)
   {
-  case 0: // Got two arguments, everything's fine
+  case 0:         // Got two arguments, everything's fine
     break;
-  case -2: // E_GEN_ARG (not enough arguments, so there's only one)
+  case E_GEN_ARG: // Not enough arguments, so there's only one
     *lastbankptr = *firstbankptr;
     break;
-  default:     // Any other error, we leave now
+  default:        // Any other error, we leave now
     return -1; // miscellaneous bad arguments from p_stoa()
   }
 
@@ -963,11 +963,14 @@ LOCAL_C VOID sendPSEL2(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   TEXT szbuf[80];
   UBYTE prevbank = GETPSEL2();
 
-  /*p_atos(szbuf,"PSEL2=0x%02x", prevbank);
+
+#if 0
+  p_atos(szbuf,"PSEL2=0x%02x", prevbank);
   println(szbuf);
   p_atos(szbuf,"bankno=0x%02x", bankno);
   println(szbuf);
-  return;*/
+  return;
+#endif
 
   p_atos(szbuf, "REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM | P_FREPLACE | P_FUPDATE) != 0)
@@ -1211,6 +1214,15 @@ LOCAL_C VOID sysver()
   println(szbuf);
 }
 
+
+/** SSD Routines
+ * 
+ * Functions for getting information about SSDs and dumping them. 
+*/
+
+/**
+ * Grabs basic information about an SSD and prints it to the console.
+ */
 LOCAL_C VOID ssdinfo(TEXT *devname)
 {
   P_DINFO dinfo;
@@ -1232,6 +1244,9 @@ LOCAL_C VOID ssdinfo(TEXT *devname)
   println(szbuf);
 }
 
+/**
+ * Sends a dump of an SSD or peripheral ROM over a PLP link to the C: drive of the remote machine (REM::C:).
+ */
 LOCAL_C VOID sendssd(TEXT *devname)
 {
 #define BLOCKSIZE 256
@@ -1300,6 +1315,9 @@ LOCAL_C VOID sendssd(TEXT *devname)
   p_close(fd);
 }
 
+/**
+ * Saves a dump of an SSD or peripheral ROM to a local device, such as the RAMDRIVE or another SSD.
+ */
 LOCAL_C VOID savessd(TEXT *devargs)
 {
 #define BLOCKSIZE 256
@@ -1383,9 +1401,11 @@ LOCAL_C VOID savessd(TEXT *devargs)
     return;
   }
 
-  // p_atos(szbuf, "Source: %s (Name: %s)  Destination: %s", fulldevsrcname, dinfo.name, fulldevdestname);
-  // p_atos(szbuf, "Source: %s  Destination: %s", fulldevsrcname, fulldevdestname);
-  // println(szbuf);
+#if 0
+  p_atos(szbuf, "Source: %s (Name: %s)  Destination: %s", fulldevsrcname, dinfo.name, fulldevdestname);
+  p_atos(szbuf, "Source: %s  Destination: %s", fulldevsrcname, fulldevdestname);
+  println(szbuf);
+#endif
 
   // TODO: Check that the file doesn't already exist
 
@@ -1684,8 +1704,8 @@ LOCAL_C VOID SpecificInit(VOID)
   uEnableGrey();
   gci = gCreateGC0(uFindMainWid());
 
-  uEscape(FALSE);           /* disable Psion-Esc */
-  MainWid = uFindMainWid(); /* find id of main display window */
+  uEscape(FALSE);              // disable Psion-Esc
+  MainWid = uFindMainWid();    // find id of main display window
   gCreateGC0(MainWid);
 
   Font.style = G_STY_MONO;
