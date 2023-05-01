@@ -14,6 +14,7 @@
 
 #include "dis.h"
 #include "machine.h"
+#include "edisasm.rsg"
 
 GLREF_D UWORD _UseFullScreen;
 LOCAL_D UINT MainWid; /* ID of main window */
@@ -1640,7 +1641,7 @@ LOCAL_C VOID key_process(VOID)
 
   /* Do something with key.keycode */
   if (key.keycode == W_KEY_HELP)
-    wInfoMsg("Help pressed!");
+    hHelpSubSystem(EDISASM_HELP, 0);
   else if (key.keycode != W_KEY_RETURN)
     hEBHandleKey(ebH, key.keycode, key.modifiers);
   else
@@ -1710,6 +1711,8 @@ LOCAL_C VOID SpecificInit(VOID)
 
   Font.style = G_STY_MONO;
   Font.id = FONT;
+
+  hInitAppRcb();
 
   gFontInfo(Font.id, Font.style, &gfi);
   text_height = gfi.ascent + gfi.descent + VERTICAL_LEADING;

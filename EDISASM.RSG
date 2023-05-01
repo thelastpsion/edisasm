@@ -1,0 +1,7 @@
+#define EDISASM_HELP 1
+#define EDISASM_HELP__I 2
+#define DUMPING 3
+#define DUMPING__I 4
+#define DUMPING_SSD_LOCAL 5
+#define DUMPING_SSD_REMOTE 6
+#define CREDITS 7

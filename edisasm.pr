@@ -2,6 +2,24 @@
 #set epocinit=iplib
 #model small jpi
 
+--- Resource Files
+#if (%main.rsc #older %main.rss)
+#or (%main.rsc #older help\edishelp.rhi)
+#then
+  #file delete %main.rsc
+  #file delete %main.rsg
+---  #file delete %main.rzc
+#endif
+
+#if (%main.rsg #older %main.rss)
+#or (%main.rsg #older help\edishelp.rss)
+#then
+  #file delete %main.rsg
+  #file delete %main.rsc
+---  #file delete %main.rzc
+  #run "rcomp -S%main -O%main -Ic:\SIBOSDK\INCLUDE\ -G%main" no_window
+#endif
+
 --- Compile
 #compile machine
 #compile edisasm

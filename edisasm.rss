@@ -1,0 +1,3 @@
+#include <hwim.rh>
+
+#include "help\edishelp.rhi"

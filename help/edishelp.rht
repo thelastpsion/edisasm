@@ -1,0 +1,46 @@
+#Page edisasm_help           EDisAsm
+
+#topic dumping
+#topic credits
+
+#
+# This comment line should be ignored
+#
+
+
+#Page dumping    Dumping ROMs and SSDs
+
+#topic dumping_ssd_local
+#topic dumping_ssd_remote
+
+This help screen displays information
+about dumping ROMs and SSDs.
+
+#End
+
+
+#Page dumping_ssd_local         Dumping SSDs locally
+
+Dumping SSDs to a local drive:
+
+> savessd a m
+
+#End
+
+
+#Page dumping_ssd_remote         Dumping SSDs over serial
+
+Dumping SSDs to a remote device
+over a serial link:
+
+> dumpssd a
+
+#End
+
+
+#page credits    Credits
+
+Some text describing the
+486 processor goes here
+
+#end

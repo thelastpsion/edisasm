@@ -1,0 +1,71 @@
+/* edishelp.rhi */
+/* Created by PHCOMP Version D1.10 from edishelp.rht */
+
+RESOURCE HELP_ARRAY edisasm_help
+{
+  topic = "EDisAsm";
+  topic_id = edisasm_help__i;
+}
+
+RESOURCE TOPIC_ARRAY edisasm_help__i
+{
+  id_lst =
+  {
+    dumping,
+    credits
+  };
+}
+
+RESOURCE HELP_ARRAY dumping
+{
+  topic = "Dumping ROMs and SSDs";
+  topic_id = dumping__i;
+  strlst =
+  {
+    STRING { str="This help screen displays information"; },
+    STRING { str="about dumping ROMs and SSDs."; }
+  };
+}
+
+RESOURCE TOPIC_ARRAY dumping__i
+{
+  id_lst =
+  {
+    dumping_ssd_local,
+    dumping_ssd_remote
+  };
+}
+
+RESOURCE HELP_ARRAY dumping_ssd_local
+{
+  topic = "Dumping SSDs locally";
+  strlst =
+  {
+    STRING { str="Dumping SSDs to a local drive:"; },
+    STRING { str=""; },
+    STRING { str="> savessd a m"; }
+  };
+}
+
+RESOURCE HELP_ARRAY dumping_ssd_remote
+{
+  topic = "Dumping SSDs over serial";
+  strlst =
+  {
+    STRING { str="Dumping SSDs to a remote device"; },
+    STRING { str="over a serial link:"; },
+    STRING { str=""; },
+    STRING { str="> dumpssd a"; }
+  };
+}
+
+RESOURCE HELP_ARRAY credits
+{
+  topic = "Credits";
+  strlst =
+  {
+    STRING { str="Some text describing the"; },
+    STRING { str="486 processor goes here"; }
+  };
+}
+
