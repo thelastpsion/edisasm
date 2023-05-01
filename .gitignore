@@ -1,9 +1,41 @@
+# Psion SIBO C SDK Compiled and Generated Files
 **/*.APP
-**/*.MAP
-**/*.OBJ
-!ACCESS.OBJ
-INSTALL/**
+**/*.app
+**/*.IMG
+**/*.img
+**/*.EXE
+**/*.exe
+**/*.RSC
+**/*.rsc
+**/*.RZC
+**/*.rzc
+#**/*.RSG
+#**/*.rsg
+#**/*.SHD
+#**/*.shd
+
+# Psion Debug/Symbol Files
 **/*.DBD
+**/*.dbd
 **/*.SYM
-/access.lst
+**/*.sym
+
+# Standard C Compilation Objects and Files
+**/*.MAP
+**/*.map
+**/*.OBJ
+**/*.obj
+
+# Installation Path
+INSTALL/**
+
+# SSD Images
+**/*.fat12
+**/*.rom
+**/*.ssd
+
+# EDisAsm Specifics
+!ACCESS.OBJ
+!access.obj
 /ACCESS.LST
+/access.lst
