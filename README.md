@@ -27,8 +27,8 @@ You will need...
 
 This is more of a general note on using USB to RS232 adapters. People have had varying success with transferring files using different adapters. It very much depends on the chipset. Here are some examples:
 
-- **CH340**: I personally have had success with using a CH340-based adapter with PsiWin in Windows XP under VirtualBox. However, DOSBox doesn't like the CH340, and reliability with McLink and SDBG has been limited.
-- **PL2303**: This is known to work with DOSBox, so McLink and SDBG should work fine. It hasn't been tested with PsiWin.
+- **PL2303**: The best USB-RS232 chipset for the job. This is known to work with DOSBox and DOSBox Staging, so McLink and SDBG will work fine. It also works with PsiWin in Windows XP under VirtualBox.
+- **CH340**: I have had success with using a CH340-based adapter with PsiWin in Windows XP under VirtualBox. However, DOSBox doesn't like the CH340, so reliability with McLink and SDBG has been limited.
 
 ### Using PLPTOOLS
 
