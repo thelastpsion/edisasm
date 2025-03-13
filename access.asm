@@ -155,6 +155,7 @@ SelectChannel5		equ	(mask A9MPack5Enable)
 	public	_getds
 	public  _getA9RCtrl
 	public  _getA9RStat
+	public  _memputpsel0
 
 _getA9RCtrl proc near
 	cli
@@ -706,6 +707,85 @@ dontundo_mp2:
 	sti
 	retn
 _memcpypsel2	endp
+
+_memputpsel0	proc	near
+	push	si
+	push	di	; save these
+	push	es
+
+			; save parameters
+
+	push	ds	; DEST SEGMENT (PROCESS NORMAL DS)
+	push	dx	; DEST OFFSET
+	push	cx	; LENGTH
+	push	bx	; SOURCE OFFSET
+	push	ax	; PSEL0
+
+	push	bx	; di=bx = offset to read
+	pop	di
+
+	push	dx	; si=dx = destination buffer offset
+	pop	si
+
+; Patrick clears decimal here, not sure why :-~
+	; cld
+	cli
+
+	push	ds	; es=ds = process's normal ds
+	pop	es	; (should be this anyway)
+
+
+			; setup psel0=al
+
+			; save old SS:20 (memory protection status)
+	push	cx	; save count
+	sub	cl,cl
+	xchg	cl,[ss:20h]
+	mov	ss20,cx
+	out	15h,al	; A9BProtectionOffW
+	pop	cx	; restore count
+
+	push	ax	; save current PSEL2
+	in	al,28h	; A9BPageSelect6000
+	mov	oldpsel0,ax
+	pop	ax
+
+			; set new PSEL0
+	and	ax,00ffh
+	out	28h,al	; A9BPageSelect6000
+
+
+	push	es	; save process ES
+	push	6000h	; source segment (es) is always 6000
+	pop	es
+	rep	movsb	; memcpy(ds:si, 6000:di, cx)
+	pop	es	; restore process ES
+
+	push	ax	; restore old PSEL0
+	mov	ax,oldpsel0
+	out	28h,al	; A9BPageSelect6000
+	pop	ax
+	
+
+	push	cx
+	mov	cx,ss20
+	test	cl,cl
+	jz	dontundo_mt0
+	out	14h,al	; A9BProtectionOnW
+dontundo_mt0:
+	pop	cx
+
+	pop	ax
+	pop	bx
+	pop	cx
+	pop	dx
+	pop	ds
+	pop	es
+	pop	di	; save these
+	pop	si
+	sti
+	retn
+_memputpsel0	endp
 
 	.data
 ss20	dw	0

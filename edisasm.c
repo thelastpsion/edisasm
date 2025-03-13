@@ -14,7 +14,8 @@
 
 #include "dis.h"
 #include "machine.h"
-#include "edisasm.rsg"
+// #include "edisasm.rsg"
+#include "EDISASM.RSG"
 
 GLREF_D UWORD _UseFullScreen;
 LOCAL_D UINT MainWid; /* ID of main window */
@@ -331,6 +332,7 @@ GLREF_C UWORD GETCS(void);
 GLREF_C UWORD GETDS(void);
 GLREF_C UWORD GETA9RCTRL(void);
 GLREF_C UWORD GETA9RSTAT(void);
+GLREF_C VOID MEMPUTPSEL0(UWORD psel0, UWORD offsetseg6000, UWORD count, UBYTE *buf);
 
 LOCAL_C VOID cls(VOID)
 {
@@ -1215,6 +1217,21 @@ LOCAL_C VOID sysver()
   println(szbuf);
 }
 
+/** Memory Testing Routines
+ * 
+ */
+LOCAL_C VOID memtest6000()
+{
+#define MINIBUFFERSIZE 16
+  static TEXT buf_send[MINIBUFFERSIZE];
+  // static TEXT buf_rcv[BUFFERSIZE];
+
+  println("Writing to 0600:0000, page 20h");
+  p_atos(buf_send, "ThisIsSomeText!");
+  println(buf_send);
+  MEMPUTPSEL0(0x20, 0x0000, MINIBUFFERSIZE, buf_send);
+  println(buf_send);
+}
 
 /** SSD Routines
  * 
@@ -1578,7 +1595,11 @@ LOCAL_C VOID command_process(TEXT *cmd)
   {
     banktest();
   }
-  else if (p_scmp("bank", cmd) == 0)
+  else if (p_scmp("memtest6000", cmd) == 0)
+  {
+    memtest6000();
+  }
+    else if (p_scmp("bank", cmd) == 0)
   {
     p_atos(buf, "Current ROM bank is %02x", bankno);
     wInfoMsg(buf);
@@ -1748,7 +1769,10 @@ LOCAL_C VOID SpecificInit(VOID)
 
   ebH = CreateEditor();
   if (!ebH)
+  {
     p_exit(-1);
+  }
+
   printlnc("EDisAsm - SIBO/EPOC16 Exploratory Tool");
   printlnc("v0.0.5 (2023-03-24)"); // TODO: there must be a better way to set this at build time
   printlnc("Original version by Matt Gumbley,");
