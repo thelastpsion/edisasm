@@ -326,7 +326,7 @@ GLREF_C UBYTE GETPSEL2(void);
 GLREF_C UBYTE ACCESS(UWORD, UWORD);
 GLREF_C VOID MEMCPY(UWORD segdiv4, UWORD offset, UWORD count, UBYTE *buf);
 GLREF_C VOID MEMCPYPSEL0(UWORD psel0, UWORD offsetseg6000, UWORD count, UBYTE *buf);
-GLREF_C VOID MEMCPYPSEL1(UWORD psel0, UWORD offsetseg7000, UWORD count, UBYTE *buf);
+GLREF_C VOID MEMCPYPSEL1(UWORD psel1, UWORD offsetseg7000, UWORD count, UBYTE *buf);
 GLREF_C VOID MEMCPYPSEL2(UWORD psel2, UWORD offsetseg8000, UWORD count, UBYTE *buf);
 GLREF_C UWORD GETCS(void);
 GLREF_C UWORD GETDS(void);
@@ -1233,6 +1233,17 @@ LOCAL_C VOID memtest6000()
   println(buf_send);
 }
 
+LOCAL_C VOID format4()
+{
+  static TEXT header[32];
+
+  p_atos(header, "RAMDRIVE   ");
+  header[11] = 8;
+  header[24] = '!';
+  MEMPUTPSEL0(0x08, 0x4200, 32, header);
+  println("Done!");
+}
+
 /** SSD Routines
  * 
  * Functions for getting information about SSDs and dumping them. 
@@ -1639,6 +1650,10 @@ LOCAL_C VOID command_process(TEXT *cmd)
   else if (p_scmp("sysver", cmd) == 0)
   {
     sysver();
+  }
+    else if (p_scmp("format4", cmd) == 0)
+  {
+    format4();
   }
   else if (p_scmp("cls", cmd) == 0)
   {
