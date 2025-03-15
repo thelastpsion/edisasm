@@ -504,17 +504,17 @@ _memcpypsel0	proc	near
 	sub	cl,cl
 	xchg	cl,[ss:20h]
 	mov	ss20,cx
-	out	15h,al	; A9BProtectionOffW
+	out	A9BProtectionOffW,al
 	pop	cx	; restore count
 
 	push	ax	; save current PSEL2
-	in	al,28h	; A9BPageSelect6000
+	in	al,A9BPageSelect6000RW
 	mov	oldpsel0,ax
 	pop	ax
 
 			; set new PSEL0
 	and	ax,00ffh
-	out	28h,al	; A9BPageSelect6000
+	out	A9BPageSelect6000RW,al
 
 
 	push	ds	; save process DS
@@ -525,7 +525,7 @@ _memcpypsel0	proc	near
 
 	push	ax	; restore old PSEL0
 	mov	ax,oldpsel0
-	out	28h,al	; A9BPageSelect6000
+	out	A9BPageSelect6000RW,al
 	pop	ax
 	
 
@@ -533,7 +533,7 @@ _memcpypsel0	proc	near
 	mov	cx,ss20
 	test	cl,cl
 	jz	dontundo_mp0
-	out	14h,al	; A9BProtectionOnW
+	out	A9BProtectionOnW,al	; A9BProtectionOnW
 dontundo_mp0:
 	pop	cx
 
@@ -756,7 +756,7 @@ _memputpsel0	proc	near
 
 
 	push	es	; save process ES
-	push	6000h	; source segment (es) is always 6000
+	push	6000h	; destination segment (es) is always 6000
 	pop	es
 	rep	movsb	; memcpy(ds:si, 6000:di, cx)
 	pop	es	; restore process ES
