@@ -475,6 +475,63 @@ LOCAL_C INT parse_bankno(TEXT *addr)
   return TRUE;
 }
 
+LOCAL_C INT parse_psel0(TEXT *addr)
+{
+  UWORD tpsel0;
+
+  /* Skip WS until hex digit */
+  while (*addr && !p_isxdigit(*addr))
+    addr++;
+  /* EOL? Use last address */
+  if (!*addr)
+    return TRUE;
+  if (p_stog(&addr, &tpsel0, 16) != 0)
+  {
+    wInfoMsg(maladdr);
+    return FALSE;
+  }
+  psel0 = tpsel0;
+  return TRUE;
+}
+
+LOCAL_C INT parse_psel1(TEXT *addr)
+{
+  UWORD tpsel1;
+
+  /* Skip WS until hex digit */
+  while (*addr && !p_isxdigit(*addr))
+    addr++;
+  /* EOL? Use last address */
+  if (!*addr)
+    return TRUE;
+  if (p_stog(&addr, &tpsel1, 16) != 0)
+  {
+    wInfoMsg(maladdr);
+    return FALSE;
+  }
+  psel1 = tpsel1;
+  return TRUE;
+}
+
+LOCAL_C INT parse_psel2(TEXT *addr)
+{
+  UWORD tpsel2;
+
+  /* Skip WS until hex digit */
+  while (*addr && !p_isxdigit(*addr))
+    addr++;
+  /* EOL? Use last address */
+  if (!*addr)
+    return TRUE;
+  if (p_stog(&addr, &tpsel2, 16) != 0)
+  {
+    wInfoMsg(maladdr);
+    return FALSE;
+  }
+  psel2 = tpsel2;
+  return TRUE;
+}
+
 LOCAL_C INT parse_intno(TEXT *addr)
 {
   UWORD tintno;
@@ -531,7 +588,7 @@ LOCAL_C VOID dump_bytes(VOID)
 {
   INT y, x;
   UBYTE b[16];
-  UWORD prevbank = p_getrombank();
+  UWORD prevbank;
 
   cls();
   for (y = 0; y < rows; y++)
@@ -540,9 +597,49 @@ LOCAL_C VOID dump_bytes(VOID)
     p_atos(LINE, "%04x:%04x", seg, off);
     LINE[9] = ' ';
     LINE[10] = LINE[60] = '\263';
-    p_setrombank(bankno);
+
+    switch (seg)
+    {
+      case 0x6000:
+        prevbank = GETPSEL0();
+        SETPSEL0(psel0);
+        break;
+      case 0x7000:
+        prevbank = GETPSEL1();
+        SETPSEL1(psel1);
+        break;
+      case 0x8000:
+        prevbank = GETPSEL2();
+        SETPSEL2(psel2);
+        break;
+      case 0x9000:
+        prevbank = p_getrombank();
+        p_setrombank(bankno);
+        break;
+    }
+  
     MEMCPY(seg >> 4, off, 16, b);
-    p_setrombank(prevbank);
+
+    switch (seg)
+    {
+      case 0x6000:
+        prevbank = GETPSEL0();
+        SETPSEL0(prevbank);
+        break;
+      case 0x7000:
+        prevbank = GETPSEL1();
+        SETPSEL1(prevbank);
+        break;
+      case 0x8000:
+        prevbank = GETPSEL2();
+        SETPSEL2(prevbank);
+        break;
+      case 0x9000:
+        prevbank = p_getrombank();
+        p_setrombank(prevbank);
+        break;
+    }
+
     for (x = 0; x < 16; x++)
     {
       off++;
@@ -561,8 +658,8 @@ LOCAL_C VOID dump_words(VOID)
 {
   INT y, x;
   UBYTE h, l;
-  UWORD prevbank = p_getrombank();
-
+  UWORD prevbank;
+  
   cls();
   for (y = 0; y < rows; y++)
   {
@@ -573,16 +670,96 @@ LOCAL_C VOID dump_words(VOID)
 
     for (x = 0; x < 8; x++)
     {
-      p_setrombank(bankno);
+
+      switch (seg)
+      {
+        case 0x6000:
+          prevbank = GETPSEL0();
+          SETPSEL0(psel0);
+          break;
+        case 0x7000:
+          prevbank = GETPSEL1();
+          SETPSEL1(psel1);
+          break;
+        case 0x8000:
+          prevbank = GETPSEL2();
+          SETPSEL2(psel2);
+          break;
+        case 0x9000:
+          prevbank = p_getrombank();
+          p_setrombank(bankno);
+          break;
+      }
+
       l = ACCESS(seg, off);
-      p_setrombank(prevbank);
+
+      switch (seg)
+      {
+        case 0x6000:
+          prevbank = GETPSEL0();
+          SETPSEL0(prevbank);
+          break;
+        case 0x7000:
+          prevbank = GETPSEL1();
+          SETPSEL1(prevbank);
+          break;
+        case 0x8000:
+          prevbank = GETPSEL2();
+          SETPSEL2(prevbank);
+          break;
+        case 0x9000:
+          prevbank = p_getrombank();
+          p_setrombank(prevbank);
+          break;
+      }
+
       LINE[62 + (x << 1)] = l;
       off++;
       if (!off)
         seg += 0x1000;
-      p_setrombank(bankno);
+
+      switch (seg)
+      {
+        case 0x6000:
+          prevbank = GETPSEL0();
+          SETPSEL0(psel0);
+          break;
+        case 0x7000:
+          prevbank = GETPSEL1();
+          SETPSEL1(psel1);
+          break;
+        case 0x8000:
+          prevbank = GETPSEL2();
+          SETPSEL2(psel2);
+          break;
+        case 0x9000:
+          prevbank = p_getrombank();
+          p_setrombank(bankno);
+          break;
+      }
+  
       h = ACCESS(seg, off);
-      p_setrombank(prevbank);
+
+      switch (seg)
+      {
+        case 0x6000:
+          prevbank = GETPSEL0();
+          SETPSEL0(prevbank);
+          break;
+        case 0x7000:
+          prevbank = GETPSEL1();
+          SETPSEL1(prevbank);
+          break;
+        case 0x8000:
+          prevbank = GETPSEL2();
+          SETPSEL2(prevbank);
+          break;
+        case 0x9000:
+          prevbank = p_getrombank();
+          p_setrombank(prevbank);
+          break;
+      }
+  
       LINE[63 + (x << 1)] = h;
       off++;
       if (!off)
@@ -964,16 +1141,6 @@ LOCAL_C VOID sendPSEL2(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   static UBYTE buf[BUFFERSIZE];
   UINT tseg;
   TEXT szbuf[80];
-  UBYTE prevbank = GETPSEL2();
-
-
-#if 0
-  p_atos(szbuf,"PSEL2=0x%02x", prevbank);
-  println(szbuf);
-  p_atos(szbuf,"bankno=0x%02x", bankno);
-  println(szbuf);
-  return;
-#endif
 
   p_atos(szbuf, "REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM | P_FREPLACE | P_FUPDATE) != 0)
@@ -991,9 +1158,7 @@ LOCAL_C VOID sendPSEL2(UINT seg, UINT off, UINT lastseg, TEXT *fname)
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
       wInfoMsg(szbuf);
-      SETPSEL2(bankno);
-      MEMCPY(seg, off, BUFFERSIZE, buf);
-      SETPSEL2(prevbank);
+      MEMCPYPSEL2(psel2, off, BUFFERSIZE, buf);
       p_write(fd, buf, BUFFERSIZE);
       off += BUFFERSIZE;
       if (off == 0)
@@ -1036,7 +1201,6 @@ LOCAL_C VOID sendPSEL0(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   static UBYTE buf[BUFFERSIZE];
   UINT tseg;
   TEXT szbuf[80];
-  UBYTE prevbank = GETPSEL0();
 
   p_atos(szbuf, "REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM | P_FREPLACE | P_FUPDATE) != 0)
@@ -1054,9 +1218,7 @@ LOCAL_C VOID sendPSEL0(UINT seg, UINT off, UINT lastseg, TEXT *fname)
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
       wInfoMsg(szbuf);
-      SETPSEL0(bankno);
-      MEMCPY(seg, off, BUFFERSIZE, buf);
-      SETPSEL0(prevbank);
+      MEMCPYPSEL0(psel0, off, BUFFERSIZE, buf);
       p_write(fd, buf, BUFFERSIZE);
       off += BUFFERSIZE;
       if (off == 0)
@@ -1074,7 +1236,6 @@ LOCAL_C VOID sendPSEL1(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   static UBYTE buf[BUFFERSIZE];
   UINT tseg;
   TEXT szbuf[80];
-  UBYTE prevbank = GETPSEL1();
 
   p_atos(szbuf, "REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM | P_FREPLACE | P_FUPDATE) != 0)
@@ -1092,9 +1253,7 @@ LOCAL_C VOID sendPSEL1(UINT seg, UINT off, UINT lastseg, TEXT *fname)
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
       wInfoMsg(szbuf);
-      SETPSEL1(bankno);
-      MEMCPY(seg, off, BUFFERSIZE, buf);
-      SETPSEL1(prevbank);
+      MEMCPYPSEL1(psel1, off, BUFFERSIZE, buf);
       p_write(fd, buf, BUFFERSIZE);
       off += BUFFERSIZE;
       if (off == 0)
@@ -1105,21 +1264,21 @@ LOCAL_C VOID sendPSEL1(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   }
 }
 
-LOCAL_C VOID sendbankPSEL0(UWORD bank)
+LOCAL_C VOID sendbankPSEL0(UWORD page)
 {
   TEXT buf[40];
 
-  p_atos(buf, "RAM1%02x", bank);
-  bankno = bank;
+  p_atos(buf, "RAM1%02x", page);
+  psel0 = page;
   sendPSEL0(0x0600, 0x0000, 0x0700, buf);
 }
 
-LOCAL_C VOID sendbankPSEL1(UWORD bank)
+LOCAL_C VOID sendbankPSEL1(UWORD page)
 {
   TEXT buf[40];
 
-  p_atos(buf, "RAM2%02x", bank);
-  bankno = bank;
+  p_atos(buf, "RAM2%02x", page);
+  psel1 = page;
   sendPSEL1(0x0700, 0x0000, 0x0800, buf);
 }
 
@@ -1140,7 +1299,7 @@ LOCAL_C VOID sendbanks6000()
 
 LOCAL_C VOID sendbanks6000selection(TEXT *bankargs)
 {
-  UINT firstbank = 0, lastbank = 0;
+  UINT firstpage = 0, lastpage = 0;
   INT ret;
   TEXT szbuf[80];
   INT b;
@@ -1151,38 +1310,38 @@ LOCAL_C VOID sendbanks6000selection(TEXT *bankargs)
     return;
   }
 
-  ret = banknums(&bankargs, &firstbank, &lastbank);
+  ret = banknums(&bankargs, &firstpage, &lastpage);
 
   switch (ret)
   {
   case 0:
     break;
   case -1:
-    println("Bad arguments.");
+    println("ERROR: Bad arguments.");
     return;
   case -2:
-    p_atos(szbuf, "First bank can't be bigger than the last bank! (%02x>%02x)", firstbank, lastbank);
+    p_atos(szbuf, "ERROR: First page can't be higher than the last page (%02x>%02x)", firstpage, lastpage);
     println(szbuf);
     return;
   case -3:
-    println("Bank must be between 00 and FF!");
+    println("ERROR: Page must be between 00 and FF");
     return;
   default:
     println("Unhandled error from banknums()");
     return;
   }
 
-  if (firstbank == lastbank)
+  if (firstpage == lastpage)
   {
-    p_atos(szbuf, "Sending bank %02x...", firstbank);
+    p_atos(szbuf, "Sending bank %02x...", firstpage);
   }
   else
   {
-    p_atos(szbuf, "Sending banks %02x to %02x...", firstbank, lastbank);
+    p_atos(szbuf, "Sending banks %02x to %02x...", firstpage, lastpage);
   }
   println(szbuf);
 
-  for (b = firstbank; b <= lastbank; b++)
+  for (b = firstpage; b <= lastpage; b++)
     sendbankPSEL0(b);
 }
 
@@ -1610,9 +1769,24 @@ LOCAL_C VOID command_process(TEXT *cmd)
   {
     memtest6000();
   }
-    else if (p_scmp("bank", cmd) == 0)
+  else if (p_scmp("bank", cmd) == 0 || p_scmp("psel3", cmd) == 0)
   {
-    p_atos(buf, "Current ROM bank is %02x", bankno);
+    p_atos(buf, "Current ROM Bank 2 page is %02x", bankno);
+    wInfoMsg(buf);
+  }
+  else if (p_scmp("psel0", cmd) == 0)
+  {
+    p_atos(buf, "Current RAM Bank 1 page is %02x", psel0);
+    wInfoMsg(buf);
+  }
+  else if (p_scmp("psel1", cmd) == 0)
+  {
+    p_atos(buf, "Current RAM Bank 2 page is %02x", psel1);
+    wInfoMsg(buf);
+  }
+  else if (p_scmp("psel2", cmd) == 0)
+  {
+    p_atos(buf, "Current ROM Bank 1 page is %02x", psel2);
     wInfoMsg(buf);
   }
   else if (p_scmp("a9rctrl", cmd) == 0)
@@ -1631,7 +1805,39 @@ LOCAL_C VOID command_process(TEXT *cmd)
   {
     if (parse_bankno(cmd + 4))
     {
-      p_atos(buf, "ROM bank %02x selected", bankno);
+      p_atos(buf, "ROM Bank 1 Page %02x selected", bankno);
+      wInfoMsg(buf);
+    }
+  }
+  else if (p_bcmpi("psel0", 5, cmd, 5) == 0)
+  {
+    if (parse_psel0(cmd + 5))
+    {
+      p_atos(buf, "RAM Bank 1 Page %02x selected", psel0);
+      wInfoMsg(buf);
+    }
+  }
+  else if (p_bcmpi("psel1", 5, cmd, 5) == 0)
+  {
+    if (parse_psel1(cmd + 5))
+    {
+      p_atos(buf, "RAM Bank 2 Page %02x selected", psel1);
+      wInfoMsg(buf);
+    }
+  }
+  else if (p_bcmpi("psel2", 5, cmd, 5) == 0)
+  {
+    if (parse_psel2(cmd + 5))
+    {
+      p_atos(buf, "ROM Bank 1 Page %02x selected", psel2);
+      wInfoMsg(buf);
+    }
+  }
+  else if (p_bcmpi("psel3", 5, cmd, 5) == 0)
+  {
+    if (parse_bankno(cmd + 5))
+    {
+      p_atos(buf, "ROM Bank 2 Page %02x selected", bankno);
       wInfoMsg(buf);
     }
   }
