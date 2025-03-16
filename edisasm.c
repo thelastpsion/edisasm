@@ -305,7 +305,7 @@ LOCAL_D VOID *ebH;
 LOCAL_D INT cx = 0, cy = 0;
 
 /* Address holders */
-LOCAL_D UWORD seg = 0, off = 0, intno = 0, bankno = 0;
+LOCAL_D UWORD seg = 0, off = 0, intno = 0;
 LOCAL_D UWORD psel0, psel1, psel2, psel3;
 
 /* Disassembler stuff */
@@ -456,9 +456,9 @@ LOCAL_C VOID gotoxy(INT x, INT y)
   cy = y;
 }
 
-LOCAL_C INT parse_bankno(TEXT *addr)
+LOCAL_C INT parse_psel3(TEXT *addr)
 {
-  UWORD tbankno;
+  UWORD tpsel3;
 
   /* Skip WS until hex digit */
   while (*addr && !p_isxdigit(*addr))
@@ -466,12 +466,12 @@ LOCAL_C INT parse_bankno(TEXT *addr)
   /* EOL? Use last address */
   if (!*addr)
     return TRUE;
-  if (p_stog(&addr, &tbankno, 16) != 0)
+  if (p_stog(&addr, &tpsel3, 16) != 0)
   {
     wInfoMsg(maladdr);
     return FALSE;
   }
-  bankno = tbankno;
+  psel3 = tpsel3;
   return TRUE;
 }
 
@@ -588,7 +588,7 @@ LOCAL_C VOID dump_bytes(VOID)
 {
   INT y, x;
   UBYTE b[16];
-  UWORD prevbank;
+  UWORD prevpage;
 
   cls();
   for (y = 0; y < rows; y++)
@@ -601,20 +601,20 @@ LOCAL_C VOID dump_bytes(VOID)
     switch (seg)
     {
       case 0x6000:
-        prevbank = GETPSEL0();
+        prevpage = GETPSEL0();
         SETPSEL0(psel0);
         break;
       case 0x7000:
-        prevbank = GETPSEL1();
+        prevpage = GETPSEL1();
         SETPSEL1(psel1);
         break;
       case 0x8000:
-        prevbank = GETPSEL2();
+        prevpage = GETPSEL2();
         SETPSEL2(psel2);
         break;
       case 0x9000:
-        prevbank = p_getrombank();
-        p_setrombank(bankno);
+        prevpage = p_getrombank();
+        p_setrombank(psel3);
         break;
     }
   
@@ -623,20 +623,20 @@ LOCAL_C VOID dump_bytes(VOID)
     switch (seg)
     {
       case 0x6000:
-        prevbank = GETPSEL0();
-        SETPSEL0(prevbank);
+        prevpage = GETPSEL0();
+        SETPSEL0(prevpage);
         break;
       case 0x7000:
-        prevbank = GETPSEL1();
-        SETPSEL1(prevbank);
+        prevpage = GETPSEL1();
+        SETPSEL1(prevpage);
         break;
       case 0x8000:
-        prevbank = GETPSEL2();
-        SETPSEL2(prevbank);
+        prevpage = GETPSEL2();
+        SETPSEL2(prevpage);
         break;
       case 0x9000:
-        prevbank = p_getrombank();
-        p_setrombank(prevbank);
+        prevpage = p_getrombank();
+        p_setrombank(prevpage);
         break;
     }
 
@@ -658,7 +658,7 @@ LOCAL_C VOID dump_words(VOID)
 {
   INT y, x;
   UBYTE h, l;
-  UWORD prevbank;
+  UWORD prevpage;
   
   cls();
   for (y = 0; y < rows; y++)
@@ -674,20 +674,20 @@ LOCAL_C VOID dump_words(VOID)
       switch (seg)
       {
         case 0x6000:
-          prevbank = GETPSEL0();
+          prevpage = GETPSEL0();
           SETPSEL0(psel0);
           break;
         case 0x7000:
-          prevbank = GETPSEL1();
+          prevpage = GETPSEL1();
           SETPSEL1(psel1);
           break;
         case 0x8000:
-          prevbank = GETPSEL2();
+          prevpage = GETPSEL2();
           SETPSEL2(psel2);
           break;
         case 0x9000:
-          prevbank = p_getrombank();
-          p_setrombank(bankno);
+          prevpage = p_getrombank();
+          p_setrombank(psel3);
           break;
       }
 
@@ -696,20 +696,20 @@ LOCAL_C VOID dump_words(VOID)
       switch (seg)
       {
         case 0x6000:
-          prevbank = GETPSEL0();
-          SETPSEL0(prevbank);
+          prevpage = GETPSEL0();
+          SETPSEL0(prevpage);
           break;
         case 0x7000:
-          prevbank = GETPSEL1();
-          SETPSEL1(prevbank);
+          prevpage = GETPSEL1();
+          SETPSEL1(prevpage);
           break;
         case 0x8000:
-          prevbank = GETPSEL2();
-          SETPSEL2(prevbank);
+          prevpage = GETPSEL2();
+          SETPSEL2(prevpage);
           break;
         case 0x9000:
-          prevbank = p_getrombank();
-          p_setrombank(prevbank);
+          prevpage = p_getrombank();
+          p_setrombank(prevpage);
           break;
       }
 
@@ -721,20 +721,20 @@ LOCAL_C VOID dump_words(VOID)
       switch (seg)
       {
         case 0x6000:
-          prevbank = GETPSEL0();
+          prevpage = GETPSEL0();
           SETPSEL0(psel0);
           break;
         case 0x7000:
-          prevbank = GETPSEL1();
+          prevpage = GETPSEL1();
           SETPSEL1(psel1);
           break;
         case 0x8000:
-          prevbank = GETPSEL2();
+          prevpage = GETPSEL2();
           SETPSEL2(psel2);
           break;
         case 0x9000:
-          prevbank = p_getrombank();
-          p_setrombank(bankno);
+          prevpage = p_getrombank();
+          p_setrombank(psel3);
           break;
       }
   
@@ -743,20 +743,20 @@ LOCAL_C VOID dump_words(VOID)
       switch (seg)
       {
         case 0x6000:
-          prevbank = GETPSEL0();
-          SETPSEL0(prevbank);
+          prevpage = GETPSEL0();
+          SETPSEL0(prevpage);
           break;
         case 0x7000:
-          prevbank = GETPSEL1();
-          SETPSEL1(prevbank);
+          prevpage = GETPSEL1();
+          SETPSEL1(prevpage);
           break;
         case 0x8000:
-          prevbank = GETPSEL2();
-          SETPSEL2(prevbank);
+          prevpage = GETPSEL2();
+          SETPSEL2(prevpage);
           break;
         case 0x9000:
-          prevbank = p_getrombank();
-          p_setrombank(prevbank);
+          prevpage = p_getrombank();
+          p_setrombank(prevpage);
           break;
       }
   
@@ -875,13 +875,13 @@ LOCAL_C VOID send_ivt(VOID)
 }
 
 /* I noted on the mailing list that:
-   EPOC p_setrombank() and p_getrombank() set and get the value
-   of PSEL3. The parameter of p_setrombank() ranges from 0x00 to 0xff. Values
-   < 0x80 cause the address decoder to select no memory, and so nothing is
-   accessible, apart from a series of increasing numbers in the
-   0x9000:0000-FFFF bank. Values of 0x80 to 0x9F cause one of the 0x20 64KB
-   banks to be selected. Values from 0xA0 to 0xBF and 0xC0 to 0xFF produce
-   identical banks to those selected for values 0x80 to 0x9F.
+   EPOC16 p_setrombank() and p_getrombank() set and get the value
+   of PSEL3. The parameter of p_setrombank() ranges from 0x00 to 0xFF.
+   Values < 0x80 cause the address decoder to select no memory, and so nothing
+   is accessible, apart from a series of increasing numbers in the
+   0x9000:0000-FFFF bank. For a 2MB ROM, values of 0x80 to 0x9F cause one of
+   the 0x20 64KB pages to be selected. Values from 0xA0 to 0xBF and 0xC0 to 0xFF
+   produce identical pages to those selected for values 0x80 to 0x9F.
 */
 
 LOCAL_C VOID banktest(VOID)
@@ -895,7 +895,7 @@ LOCAL_C VOID banktest(VOID)
   static TEXT buf[80];
   static TEXT LINE[80];
   static TEXT *fname = "REM::C:\\BANKS.LST";
-  UWORD prevbank = p_getrombank();
+  UWORD prevpage = p_getrombank();
 
   if (p_open(&fd, fname, P_FSTREAM | P_FREPLACE | P_FUPDATE) != 0)
     println("Can't create bank listing file");
@@ -907,14 +907,14 @@ LOCAL_C VOID banktest(VOID)
 
     for (i = 0; i < 0x100; i++)
     {
-      p_atos(buf, "Checksumming bank %02x", i);
+      p_atos(buf, "Checksumming page %02x", i);
       wInfoMsg(buf);
 
-      /* Do banks at 6000 */
+      /* Do pages at 6000 */
       MEMCPYPSEL0(i, 0x0000, BTLEN, b);
       tot6000 = 0;
       p_crc(&tot6000, b, BTLEN);
-      p_atos(LINE, "Seg 6000 Bank %02x:\r\n", i);
+      p_atos(LINE, "Seg 6000 Page %02x:\r\n", i);
       p_write(fd, LINE, p_slen(LINE));
       for (x = 0; x < 16; x++)
       {
@@ -929,11 +929,11 @@ LOCAL_C VOID banktest(VOID)
       }
       p_write(fd, "\r\n", 2);
 
-      /* Do banks at 7000 */
+      /* Do pages at 7000 */
       MEMCPYPSEL1(i, 0x0000, BTLEN, b);
       tot7000 = 0;
       p_crc(&tot7000, b, BTLEN);
-      p_atos(LINE, "Seg 7000 Bank %02x:\r\n", i);
+      p_atos(LINE, "Seg 7000 Page %02x:\r\n", i);
       p_write(fd, LINE, p_slen(LINE));
       for (x = 0; x < 16; x++)
       {
@@ -948,12 +948,12 @@ LOCAL_C VOID banktest(VOID)
       }
       p_write(fd, "\r\n", 2);
 
-      /* Do banks at 8000 */
+      /* Do pages at 8000 */
       MEMCPYPSEL2(i, 0x0000, BTLEN, b);
       tot8000 = 0;
       p_crc(&tot8000, b, BTLEN);
 
-      p_atos(LINE, "Seg 8000 Bank %02x:\r\n", i);
+      p_atos(LINE, "Seg 8000 Page %02x:\r\n", i);
       p_write(fd, LINE, p_slen(LINE));
       for (x = 0; x < 16; x++)
       {
@@ -968,14 +968,14 @@ LOCAL_C VOID banktest(VOID)
       }
       p_write(fd, "\r\n", 2);
 
-      /* Do banks at 9000 */
+      /* Do pages at 9000 */
       p_setrombank(i);
       MEMCPY(0x0900, 0x0000, BTLEN, b);
-      p_setrombank(prevbank);
+      p_setrombank(prevpage);
       tot9000 = 0;
       p_crc(&tot9000, b, BTLEN);
 
-      p_atos(LINE, "Seg 9000 Bank %02x:\r\n", i);
+      p_atos(LINE, "Seg 9000 Page %02x:\r\n", i);
       p_write(fd, LINE, p_slen(LINE));
       for (x = 0; x < 16; x++)
       {
@@ -990,7 +990,7 @@ LOCAL_C VOID banktest(VOID)
       }
       p_write(fd, "\r\n", 2);
 
-      p_atos(LINE, "BANK %02x 6000=%04x 7000=%04x 8000=%04x 9000=%04x\r\n", i, tot6000, tot7000, tot8000, tot9000);
+      p_atos(LINE, "PAGE %02x 6000=%04x 7000=%04x 8000=%04x 9000=%04x\r\n", i, tot6000, tot7000, tot8000, tot9000);
       p_write(fd, LINE, p_slen(LINE));
     }
     println("done.");
@@ -1005,7 +1005,7 @@ LOCAL_C VOID send(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   static UBYTE buf[BUFFERSIZE];
   UINT tseg;
   TEXT szbuf[40];
-  UWORD prevbank = p_getrombank();
+  UWORD prevpage = p_getrombank();
 
   p_atos(szbuf, "REM::C:\\%s.MEM", fname);
   if (p_open(&fd, szbuf, P_FSTREAM | P_FREPLACE | P_FUPDATE) != 0)
@@ -1023,9 +1023,9 @@ LOCAL_C VOID send(UINT seg, UINT off, UINT lastseg, TEXT *fname)
       tseg = seg << 4;
       p_atos(szbuf, "Writing data from %04x:%04x", tseg, off);
       wInfoMsg(szbuf);
-      p_setrombank(bankno);
+      p_setrombank(psel3);
       MEMCPY(seg, off, BUFFERSIZE, buf);
-      p_setrombank(prevbank);
+      p_setrombank(prevpage);
       p_write(fd, buf, BUFFERSIZE);
       off += BUFFERSIZE;
       if (off == 0)
@@ -1036,12 +1036,12 @@ LOCAL_C VOID send(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   }
 }
 
-LOCAL_C VOID sendbank(UWORD bank)
+LOCAL_C VOID sendbank(UWORD page)
 {
   TEXT buf[40];
 
-  p_atos(buf, "ROM2%02x", bank);
-  bankno = bank;
+  p_atos(buf, "ROM2%02x", page);
+  psel3 = page;
   send(0x0900, 0x0000, 0x0A00, buf);
 }
 
@@ -1059,29 +1059,29 @@ LOCAL_C VOID sendbanks9000()
   across a PLP link. It calls p_stoa() to extract the two numbers, then does
   some processing. Returns a status as an INT.
 */
-LOCAL_C INT banknums(TEXT **bankargsptr, UINT *firstbankptr, UINT *lastbankptr)
+LOCAL_C INT banknums(TEXT **bankargsptr, UINT *firstpageptr, UINT *lastpageptr)
 {
   INT ret;
 
-  ret = p_stoa(bankargsptr, "%x %x", firstbankptr, lastbankptr);
+  ret = p_stoa(bankargsptr, "%x %x", firstpageptr, lastpageptr);
 
   switch (ret)
   {
   case 0:         // Got two arguments, everything's fine
     break;
   case E_GEN_ARG: // Not enough arguments, so there's only one
-    *lastbankptr = *firstbankptr;
+    *lastpageptr = *firstpageptr;
     break;
   default:        // Any other error, we leave now
     return -1; // miscellaneous bad arguments from p_stoa()
   }
 
-  if (*firstbankptr > *lastbankptr)
+  if (*firstpageptr > *lastpageptr)
   {
-    return -2; // First bank can't be bigger than the last bank
+    return -2; // First page can't be bigger than the last bank
   }
 
-  if (*firstbankptr > 0xFF || *lastbankptr > 0xFF || *firstbankptr < 0 || *lastbankptr < 0)
+  if (*firstpageptr > 0xFF || *lastpageptr > 0xFF || *firstpageptr < 0 || *lastpageptr < 0)
   {
     return -3; // invalid number
   }
@@ -1091,12 +1091,12 @@ LOCAL_C INT banknums(TEXT **bankargsptr, UINT *firstbankptr, UINT *lastbankptr)
 
 LOCAL_C VOID sendbanks9000selection(TEXT *bankargs)
 {
-  UINT firstbank = 0, lastbank = 0;
+  UINT firstpage = 0, lastpage = 0;
   INT ret;
   TEXT szbuf[80];
   INT b;
 
-  ret = banknums(&bankargs, &firstbank, &lastbank);
+  ret = banknums(&bankargs, &firstpage, &lastpage);
 
   switch (ret)
   {
@@ -1106,28 +1106,28 @@ LOCAL_C VOID sendbanks9000selection(TEXT *bankargs)
     println("Bad arguments.");
     return;
   case -2:
-    p_atos(szbuf, "First bank can't be bigger than the last bank! (%02x>%02x)", firstbank, lastbank);
+    p_atos(szbuf, "First page can't be bigger than the last page! (%02x>%02x)", firstpage, lastpage);
     println(szbuf);
     return;
   case -3:
-    println("Bank must be between 00 and FF!");
+    println("Page must be between 00 and FF.");
     return;
   default:
     println("Unhandled error from banknums()");
     return;
   }
 
-  if (firstbank == lastbank)
+  if (firstpage == lastpage)
   {
-    p_atos(szbuf, "Sending bank %02x...", firstbank);
+    p_atos(szbuf, "Sending page %02x...", firstpage);
   }
   else
   {
-    p_atos(szbuf, "Sending banks %02x to %02x...", firstbank, lastbank);
+    p_atos(szbuf, "Sending pages %02x to %02x...", firstpage, lastpage);
   }
   println(szbuf);
 
-  for (b = firstbank; b <= lastbank; b++)
+  for (b = firstpage; b <= lastpage; b++)
     sendbank(b);
 }
 
@@ -1169,12 +1169,12 @@ LOCAL_C VOID sendPSEL2(UINT seg, UINT off, UINT lastseg, TEXT *fname)
   }
 }
 
-LOCAL_C VOID sendbankPSEL2(UWORD bank)
+LOCAL_C VOID sendbankPSEL2(UWORD page)
 {
   TEXT buf[40];
 
-  p_atos(buf, "ROM1%02x", bank);
-  bankno = bank;
+  p_atos(buf, "ROM1%02x", page);
+  psel3 = page;
   sendPSEL2(0x0800, 0x0000, 0x0900, buf);
 }
 
@@ -1333,11 +1333,11 @@ LOCAL_C VOID sendbanks6000selection(TEXT *bankargs)
 
   if (firstpage == lastpage)
   {
-    p_atos(szbuf, "Sending bank %02x...", firstpage);
+    p_atos(szbuf, "Sending page %02x...", firstpage);
   }
   else
   {
-    p_atos(szbuf, "Sending banks %02x to %02x...", firstpage, lastpage);
+    p_atos(szbuf, "Sending pages %02x to %02x...", firstpage, lastpage);
   }
   println(szbuf);
 
@@ -1655,12 +1655,12 @@ LOCAL_C VOID help(VOID)
       "VECTORS: ivt (nn) shows Vector Table, sendivt writes to REM::C:\\\IVT.LST",
       "         ivtlong (nn) shows vectors and functions.",
       "XMIT:    sendram384, sendram1, sendram2, sendrom1, sendrom2, sendrom384",
-      "         send the relevant banks of memory over the NCP link. Files will be",
+      "         send the relevant pages of memory over the NCP link. Files will be",
       "         created on your PC called RAM384.MEM, RAM1xx.MEM, RAM2xx.MEM,",
       "         ROM1xx.MEM, ROM2xx.MEM, ROM384.MEM. xx is replaced by the currently",
-      "         selected bank no. Send all RAM/ROM banks: sendbanksX000. X=6,7,8,9.",
+      "         selected bank no. Send all RAM/ROM pages: sendbanksX000. X=6,7,8,9.",
       "         Send an image of an SSD: sendssd X, where X is the drive letter.",
-      "BANKS:   bank (nn) sets ROM bank, or on its own shows current ROM bank no.",
+      "PAGES:   psel0..3 (nn) sets a bank's page, or shows the bank's current page no.",
       "",
       "NB: sendrom384, sendram384, sendbanksX000 work, others might not",
   };
@@ -1707,13 +1707,13 @@ LOCAL_C VOID command_process(TEXT *cmd)
     send(0x0000, 0x0000, 0x0600, "RAM384");
   else if (p_scmp("sendram1", cmd) == 0)
   {
-    /* Need to iterate over all banks here */
+    /* Need to iterate over all pages here */
     p_atos(buf, "RAM1%02x", psel0);
     send(0x0600, 0x0000, 0x0700, buf);
   }
   else if (p_scmp("sendram2", cmd) == 0)
   {
-    /* Need to iterate over all banks here */
+    /* Need to iterate over all pages here */
     p_atos(buf, "RAM2%02x", psel1);
     send(0x0700, 0x0000, 0x0800, buf);
   }
@@ -1769,24 +1769,24 @@ LOCAL_C VOID command_process(TEXT *cmd)
   {
     memtest6000();
   }
-  else if (p_scmp("bank", cmd) == 0 || p_scmp("psel3", cmd) == 0)
-  {
-    p_atos(buf, "Current ROM Bank 2 page is %02x", bankno);
-    wInfoMsg(buf);
-  }
-  else if (p_scmp("psel0", cmd) == 0)
+  else if (p_scmp("psel0", cmd) == 0 || p_scmp("ram1", cmd) == 0)
   {
     p_atos(buf, "Current RAM Bank 1 page is %02x", psel0);
     wInfoMsg(buf);
   }
-  else if (p_scmp("psel1", cmd) == 0)
+  else if (p_scmp("psel1", cmd) == 0 || p_scmp("ram2", cmd) == 0)
   {
     p_atos(buf, "Current RAM Bank 2 page is %02x", psel1);
     wInfoMsg(buf);
   }
-  else if (p_scmp("psel2", cmd) == 0)
+  else if (p_scmp("psel2", cmd) == 0 || p_scmp("rom1", cmd) == 0)
   {
     p_atos(buf, "Current ROM Bank 1 page is %02x", psel2);
+    wInfoMsg(buf);
+  }
+  else if (p_scmp("psel3", cmd) == 0 || p_scmp("rom2", cmd) == 0)
+  {
+    p_atos(buf, "Current ROM Bank 2 page is %02x", psel3);
     wInfoMsg(buf);
   }
   else if (p_scmp("a9rctrl", cmd) == 0)
@@ -1800,14 +1800,6 @@ LOCAL_C VOID command_process(TEXT *cmd)
     p_atos(buf, "A9RStatus: 0x%04x", GETA9RSTAT());
     println(buf);
     wInfoMsg(buf);
-  }
-  else if (p_bcmpi("bank", 4, cmd, 4) == 0)
-  {
-    if (parse_bankno(cmd + 4))
-    {
-      p_atos(buf, "ROM Bank 1 Page %02x selected", bankno);
-      wInfoMsg(buf);
-    }
   }
   else if (p_bcmpi("psel0", 5, cmd, 5) == 0)
   {
@@ -1835,9 +1827,17 @@ LOCAL_C VOID command_process(TEXT *cmd)
   }
   else if (p_bcmpi("psel3", 5, cmd, 5) == 0)
   {
-    if (parse_bankno(cmd + 5))
+    if (parse_psel3(cmd + 5))
     {
-      p_atos(buf, "ROM Bank 2 Page %02x selected", bankno);
+      p_atos(buf, "ROM Bank 2 Page %02x selected", psel3);
+      wInfoMsg(buf);
+    }
+  }
+  else if (p_bcmpi("rom2", 4, cmd, 4) == 0)
+  {
+    if (parse_psel3(cmd + 4))
+    {
+      p_atos(buf, "ROM Bank 2 Page %02x selected", psel3);
       wInfoMsg(buf);
     }
   }
@@ -1886,6 +1886,15 @@ LOCAL_C VOID key_process(VOID)
     hHelpSubSystem(EDISASM_HELP, 0);
   else if (key.keycode != W_KEY_RETURN)
     hEBHandleKey(ebH, key.keycode, key.modifiers);
+  else if (key.keycode & W_SPECIAL_KEY)
+  {
+    key.keycode &= (~W_SPECIAL_KEY);
+    if (key.keycode == 'x')
+      // p_exit(0);
+      wInfoMsg("PSION-X Pressed");
+  }
+  // else if (key.keycode == ('x' | W_SPECIAL_KEY))
+  //   wInfoMsg("PSION-X Pressed");
   else
   {
     t = hEBSenseText(ebH);
@@ -1995,13 +2004,17 @@ LOCAL_C VOID SpecificInit(VOID)
   }
 
   printlnc("EDisAsm - SIBO/EPOC16 Exploratory Tool");
-  printlnc("v0.0.5 (2023-03-24)"); // TODO: there must be a better way to set this at build time
+  printlnc("v0.0.6 (2025-03-16)"); // TODO: there must be a better way to set this at build time
   printlnc("Original version by Matt Gumbley,");
-  printlnc("updated 2023 by Alex Brown.");
+  printlnc("updated 2023, 2025 by Alex Brown.");
   println("");
   println("Type 'help' for help, 'exit' to exit.");
   hEBEmphasise(ebH, TRUE);
-  bankno = p_getrombank();
+
+  psel0 = GETPSEL0();
+  psel1 = GETPSEL1();
+  psel2 = GETPSEL2();
+  psel3 = p_getrombank();
 }
 
 GLDEF_C VOID main(VOID)
